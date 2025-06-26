@@ -29,13 +29,14 @@ class CNNModel(nn.Module):
         self.fc2 = nn.Linear(hidden_dim_fc, num_classes)
 
     def forward(self, x):
-        # x shape: (max_seq_length, batch_size, embedding_dim)
-        x = x.permute(1, 2, 0)  # (batch_size, embedding_dim, max_seq_length)
+        x = x.permute(0, 2, 1)
 
+        # The rest of the logic is correct
         conv_outputs = []
         for conv_layer in self.conv1d_list:
             conv_output = conv_layer(x)
             conv_output = F.relu(conv_output)
+            # Max-pool over the entire sequence length
             conv_output = F.max_pool1d(
                 conv_output, kernel_size=conv_output.size(2)
             ).squeeze(2)
@@ -46,4 +47,6 @@ class CNNModel(nn.Module):
         x_fc1 = F.relu(self.fc1(x_dropped_out1))
         x_dropped_out2 = self.dropout(x_fc1)
         logits = self.fc2(x_dropped_out2)
+        
+        # logits shape will now be (batch_size, num_classes), which is correct
         return logits

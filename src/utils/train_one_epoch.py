@@ -16,7 +16,14 @@ def train_one_epoch(model, train_loader, loss_fn, optimizer, device, epoch=None)
             inputs = inputs.to(device)
             targets = targets.to(device)
 
+            # --- DEBUGGING STARTS HERE ---
+            print(f"Inputs shape: {inputs.shape}")  # Expected: [32, C, H, W] or similar
+            print(f"Targets shape: {targets.shape}") # Expected: [32] or [32, 1]
+            
             outputs = model(inputs)
+            
+            print(f"Outputs shape: {outputs.shape}") # This will likely show [3021, ...]
+            # --- DEBUGGING ENDS HERE ---
             loss = loss_fn(outputs, targets)
 
             optimizer.zero_grad()
