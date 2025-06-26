@@ -45,3 +45,5 @@ selected_optimizer, selected_lr = select_best_optimizer_lr(
 )
 
 print(selected_optimizer, selected_lr)
+
+print(len(next(iter(aug_train_loader))))

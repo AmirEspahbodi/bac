@@ -64,7 +64,7 @@ def contextual_data_augmentation(train_dataset: pd.DataFrame, dataset_type:Datas
     Checks for a pre-saved augmented dataset to avoid re-computation.
     """
     
-    save_path = Path(f"{output_file.split('.')[0]}_{dataset_type.value}.{output_file.split('.')[1]}")
+    save_path = Path(f"datasets/{output_file.split('.')[0]}_{dataset_type.value}.{output_file.split('.')[1]}")
     
     # 1. Check if an augmented dataset already exists
     if os.path.exists(save_path):
@@ -98,7 +98,7 @@ def contextual_data_augmentation(train_dataset: pd.DataFrame, dataset_type:Datas
 
     # 3. Augmentation Parameters
     # The number of new augmented records to create per original record.
-    num_augmentations_per_original = random.randint(3, 5) # Randomly choose between 3 to 5 augmentations
+    num_augmentations_per_original = 3 # Randomly choose between 3 to 5 augmentations
     mask_percentage = 0.15 # Percentage of tokens to mask for MLM (e.g., 15%)
     
     # Maximum sequence length for the chosen BERT model (use model.config.max_position_embeddings for definitive value)

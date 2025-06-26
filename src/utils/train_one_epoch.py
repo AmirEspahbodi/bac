@@ -1,5 +1,5 @@
 import torch
-import tqdm
+from tqdm import tqdm
 from .average_meter import AverageMeter
 
 
