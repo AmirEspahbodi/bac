@@ -1,368 +1,243 @@
 import pandas as pd
-import numpy as np
-from pathlib import Path
-from typing import List, Optional, Tuple
-from dataclasses import dataclass
-import logging
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import random
-import re
-from functools import lru_cache
 import torch
-from transformers import AutoTokenizer, AutoModelForMaskedLM, pipeline
-import warnings
+from transformers import AutoTokenizer, AutoModelForMaskedLM
+import os
+import random
+from tqdm.auto import tqdm # For progress bars
+from pathlib import Path
 from ._dataset_types import DatasetType
 
-warnings.filterwarnings("ignore")
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
-
-
-@dataclass
-class AugmentationConfig:
-    """Configuration class for augmentation parameters."""
-
-    model_name: str = "bert-large-uncased"
-    num_augmentations: int = 3  # 3-5 range, default 4
-    mask_probability: float = 0.15
-    min_mask_tokens: int = 1
-    max_mask_tokens: int = 3
-    top_k: int = 50
-    temperature: float = 1.0
-    batch_size: int = 32
-    cache_dir: str = "./.cache/"
-    output_file: str = "datasets/augmented_train_dataset.csv"
-    device: str = "cuda" if torch.cuda.is_available() else "cpu"
-    random_seed: int = 42
-
-
-class AdvancedBERTAugmenter:
+def _mask_tokens(input_ids_tensor: torch.Tensor, tokenizer: AutoTokenizer, mask_percentage: float) -> tuple[torch.Tensor, list[int]]:
     """
-    Advanced BERT-based contextual data augmentation system using MLM.
-    Implements sophisticated masking strategies and efficient batch processing.
+    Helper function to mask tokens for Masked Language Modeling (MLM).
+    Randomly masks `mask_percentage` of non-special tokens in `input_ids_tensor`
+    following BERT's masking strategy (80% [MASK], 10% random, 10% original).
     """
+    # Identify non-special tokens (don't mask CLS, SEP, PAD)
+    all_token_ids = input_ids_tensor[0].tolist()
+    non_special_token_indices = [
+        i for i, token_id in enumerate(all_token_ids)
+        if token_id not in tokenizer.all_special_ids
+    ]
 
-    def __init__(self, config: Optional[AugmentationConfig] = None):
-        self.config = config or AugmentationConfig()
-        self._setup_random_seeds()
-        self._initialize_model()
+    # Determine how many non-special tokens to mask
+    num_tokens_to_mask = min(
+        max(1, int(len(non_special_token_indices) * mask_percentage)), # At least 1 token, or calculated percentage
+        len(non_special_token_indices) # Cannot mask more tokens than available non-special tokens
+    )
+    
+    if num_tokens_to_mask == 0:
+        return input_ids_tensor, [] # No tokens to mask, return original and empty masked indices
 
-    def _setup_random_seeds(self) -> None:
-        """Set random seeds for reproducibility."""
-        random.seed(self.config.random_seed)
-        np.random.seed(self.config.random_seed)
-        torch.manual_seed(self.config.random_seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed_all(self.config.random_seed)
+    # Randomly select indices of tokens to mask from the non-special tokens
+    masked_indices_in_original_tensor = random.sample(non_special_token_indices, num_tokens_to_mask)
 
-    def _initialize_model(self) -> None:
-        """Initialize BERT model and tokenizer with optimizations."""
-        try:
-            logger.info(f"Loading model: {self.config.model_name}")
+    # Apply BERT's masking strategy: 80% [MASK], 10% random, 10% original
+    masked_input_ids = input_ids_tensor.clone()
 
-            # Initialize tokenizer and model
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                self.config.model_name,
-                cache_dir=self.config.cache_dir,
-                do_lower_case=True,
-            )
+    num_mask_token = int(num_tokens_to_mask * 0.8)
+    num_random_token = int(num_tokens_to_mask * 0.1)
+    # The remaining tokens (approx. 10%) will be kept as original, no explicit action needed for them.
 
-            self.model = AutoModelForMaskedLM.from_pretrained(
-                self.config.model_name,
-                cache_dir=self.config.cache_dir,
-                torch_dtype=torch.float16
-                if self.config.device == "cuda"
-                else torch.float32,
-            )
+    # Shuffle masked_indices to apply different strategies fairly
+    random.shuffle(masked_indices_in_original_tensor)
 
-            # Move model to device and set to evaluation mode
-            self.model.to(self.config.device)
-            self.model.eval()
+    for i, original_idx in enumerate(masked_indices_in_original_tensor):
+        if i < num_mask_token:
+            # 80% - replace with [MASK] token
+            masked_input_ids[0, original_idx] = tokenizer.mask_token_id
+        elif i < num_mask_token + num_random_token:
+            # 10% - replace with a random token ID from the vocabulary
+            random_token_id = random.randint(0, tokenizer.vocab_size - 1)
+            masked_input_ids[0, original_idx] = random_token_id
+        # Else (remaining 10%): keep the original token, so no change to masked_input_ids is needed
 
-            # Initialize MLM pipeline for efficient inference
-            self.mlm_pipeline = pipeline(
-                "fill-mask",
-                model=self.model,
-                tokenizer=self.tokenizer,
-                device=0 if self.config.device == "cuda" else -1,
-                top_k=self.config.top_k,
-                batch_size=self.config.batch_size,
-            )
+    return masked_input_ids, masked_indices_in_original_tensor
 
-            logger.info(f"Model loaded successfully on {self.config.device}")
-
-        except Exception as e:
-            logger.error(f"Failed to initialize model: {e}")
-            raise
-
-    @lru_cache(maxsize=1000)
-    def _get_maskable_tokens(self, text: str) -> List[Tuple[int, str]]:
-        """
-        Get maskable token positions with caching for efficiency.
-        Returns list of (position, token) tuples for content words.
-        """
-        # Tokenize text
-        tokens = self.tokenizer.tokenize(text)
-
-        # Filter out special tokens, punctuation, and very short tokens
-        maskable_positions = []
-        for i, token in enumerate(tokens):
-            if (
-                len(token) > 2
-                and token.isalpha()
-                and token not in self.tokenizer.all_special_tokens
-                and not token.startswith("##")
-            ):  # Avoid subword tokens
-                maskable_positions.append((i, token))
-
-        return maskable_positions
-
-    def _create_masked_versions(self, text: str) -> List[str]:
-        """
-        Create multiple masked versions of the input text using sophisticated masking strategies.
-        """
-        maskable_positions = self._get_maskable_tokens(text)
-
-        if len(maskable_positions) < self.config.min_mask_tokens:
-            return [text]  # Return original if not enough maskable tokens
-
-        masked_versions = []
-
-        for _ in range(self.config.num_augmentations):
-            # Randomly select number of tokens to mask
-            num_masks = random.randint(
-                self.config.min_mask_tokens,
-                min(self.config.max_mask_tokens, len(maskable_positions)),
-            )
-
-            # Select positions to mask (avoid clustering)
-            selected_positions = random.sample(maskable_positions, num_masks)
-            selected_indices = sorted([pos[0] for pos in selected_positions])
-
-            # Create masked version
-            tokens = self.tokenizer.tokenize(text)
-            for idx in selected_indices:
-                if idx < len(tokens):
-                    tokens[idx] = self.tokenizer.mask_token
-
-            masked_text = self.tokenizer.convert_tokens_to_string(tokens)
-            masked_versions.append(masked_text)
-
-        return masked_versions
-
-    def _generate_predictions(self, masked_texts: List[str]) -> List[str]:
-        """
-        Generate predictions for masked texts using the MLM pipeline.
-        Implements temperature-based sampling for diversity.
-        """
-        augmented_texts = []
-
-        try:
-            # Process in batches for efficiency
-            for i in range(0, len(masked_texts), self.config.batch_size):
-                batch = masked_texts[i : i + self.config.batch_size]
-
-                # Get predictions from pipeline
-                predictions = self.mlm_pipeline(batch)
-
-                # Process predictions
-                for pred_group in predictions:
-                    if isinstance(pred_group, list) and len(pred_group) > 0:
-                        # Handle multiple masks in single text
-                        if isinstance(pred_group[0], list):
-                            # Multiple masks - take first prediction for each mask
-                            filled_text = pred_group[0][0]["sequence"]
-                        else:
-                            # Single mask - apply temperature sampling
-                            scores = np.array([p["score"] for p in pred_group])
-                            if self.config.temperature != 1.0:
-                                scores = scores / self.config.temperature
-
-                            # Softmax with temperature
-                            probs = np.exp(scores) / np.sum(np.exp(scores))
-
-                            # Sample based on probabilities
-                            choice_idx = np.random.choice(len(pred_group), p=probs)
-                            filled_text = pred_group[choice_idx]["sequence"]
-
-                        augmented_texts.append(filled_text.strip())
-                    else:
-                        # Fallback to original if prediction fails
-                        augmented_texts.append(batch[0] if batch else "")
-
-        except Exception as e:
-            logger.error(f"Error in prediction generation: {e}")
-            # Return original texts as fallback
-            augmented_texts = [
-                text.replace(self.tokenizer.mask_token, "[MASK]")
-                for text in masked_texts
-            ]
-
-        return augmented_texts
-
-    def augment_single_text(self, text: str) -> List[str]:
-        """
-        Augment a single text using contextual MLM-based augmentation.
-        """
-        if not text or not isinstance(text, str):
-            return [text] * self.config.num_augmentations
-
-        # Clean and preprocess text
-        text = re.sub(r"\s+", " ", text.strip())
-
-        # Handle very short texts
-        if len(text.split()) < 3:
-            return [text] * self.config.num_augmentations
-
-        try:
-            # Create masked versions
-            masked_versions = self._create_masked_versions(text)
-
-            # Generate augmented texts
-            augmented_texts = self._generate_predictions(masked_versions)
-
-            # Ensure we have the right number of augmentations
-            while len(augmented_texts) < self.config.num_augmentations:
-                augmented_texts.append(text)
-
-            # Remove duplicates while preserving order
-            seen = set()
-            unique_augmentations = []
-            for aug_text in augmented_texts[: self.config.num_augmentations]:
-                if aug_text not in seen and aug_text != text:
-                    seen.add(aug_text)
-                    unique_augmentations.append(aug_text)
-
-            # Fill up to required number if needed
-            while len(unique_augmentations) < self.config.num_augmentations:
-                unique_augmentations.append(text)
-
-            return unique_augmentations[: self.config.num_augmentations]
-
-        except Exception as e:
-            logger.error(f"Error augmenting text: {e}")
-            # Return original text repeated as fallback
-            return [text] * self.config.num_augmentations
-
-
-def create_contextual_augmentation(
-    train_dataset: pd.DataFrame,
-    dataset_type: DatasetType, 
-    config: Optional[AugmentationConfig] = None,
-    n_workers: int = 4,
-) -> pd.DataFrame:
+def contextual_data_augmentation(train_dataset: pd.DataFrame, dataset_type:DatasetType, output_file: str = "augmented_train_dataset.csv") -> pd.DataFrame:
     """
-    Create contextual data augmentation for the entire dataset.
+    Performs contextual data augmentation on a textual dataset using a Masked Language Model (MLM).
+    It augments the 'text_input' field, creating 3-5 new records for each original,
+    and returns a combined DataFrame of original and augmented data.
+    Handles long texts by augmenting a random segment.
+    Checks for a pre-saved augmented dataset to avoid re-computation.
     """
-    config = config or AugmentationConfig()
+    
+    save_path = Path(f"{output_file.split('.')[0]}_{dataset_type.value}.{output_file.split('.')[1]}")
+    
+    # 1. Check if an augmented dataset already exists
+    if os.path.exists(save_path):
+        print(f"✅ Loading pre-saved augmented dataset from '{save_path}'.")
+        return pd.read_csv(save_path)
 
-    # Check if augmented dataset already exists
-    output_path = Path(f"{config.output_file.split('.')[0]}_{dataset_type.value}{config.output_file.split('.')[1]}")
-    if output_path.exists():
-        logger.info(f"Loading existing augmented dataset from {output_path}")
-        try:
-            augmented_dataset = pd.read_csv(output_path)
-            logger.info(f"Loaded {len(augmented_dataset)} records from existing file")
-            return augmented_dataset
-        except Exception as e:
-            logger.warning(f"Failed to load existing dataset: {e}. Creating new one.")
+    print("🚀 Starting contextual data augmentation process...")
 
-    # Validate input dataset
-    if "text_input" not in train_dataset.columns:
-        raise ValueError("Dataset must contain 'text_input' column")
+    # 2. Initialize Model and Tokenizer
+    # Using 'bert-base-uncased' as a robust and widely available MLM model.
+    # For different languages, consider models like 'bert-base-multilingual-cased' or language-specific BERTs.
+    model_name = "bert-large-uncased"
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForMaskedLM.from_pretrained(model_name)
+    except Exception as e:
+        print(f"❌ Error loading model or tokenizer: {e}")
+        print("Please ensure you have an active internet connection or the model is cached locally.")
+        raise
 
-    logger.info(f"Starting augmentation for {len(train_dataset)} records")
+    model.eval() # Set model to evaluation mode for inference (disables dropout, etc.)
 
-    # Initialize augmenter
-    augmenter = AdvancedBERTAugmenter(config)
+    # Check for GPU availability and move model to GPU if possible for efficiency
+    if torch.cuda.is_available():
+        model.to('cuda')
+        device = 'cuda'
+        print("⚡️ Using CUDA (GPU) for faster augmentation.")
+    else:
+        device = 'cpu'
+        print("🐌 CUDA (GPU) not available. Using CPU for augmentation.")
 
-    # Prepare augmented dataset
+    # 3. Augmentation Parameters
+    # The number of new augmented records to create per original record.
+    num_augmentations_per_original = random.randint(3, 5) # Randomly choose between 3 to 5 augmentations
+    mask_percentage = 0.15 # Percentage of tokens to mask for MLM (e.g., 15%)
+    
+    # Maximum sequence length for the chosen BERT model (use model.config.max_position_embeddings for definitive value)
+    max_seq_len = model.config.max_position_embeddings
+
     augmented_records = []
 
-    # Process dataset with progress tracking
-    def process_batch(batch_data: List[Tuple[int, pd.Series]]) -> List[pd.Series]:
-        """Process a batch of records."""
-        batch_results = []
+    # Iterate through each record in the original dataset with a progress bar
+    # `tqdm.auto` automatically selects the best progress bar based on the environment.
+    for index, row in tqdm(train_dataset.iterrows(), total=len(train_dataset), desc="Augmenting text records"):
+        original_text = str(row['text_input']) # Ensure text_input is treated as a string
 
-        for idx, row in batch_data:
-            try:
-                original_text = str(row["text_input"])
+        # Add the original record to the list of augmented records first
+        augmented_records.append(row.to_dict())
 
-                # Generate augmented texts
-                augmented_texts = augmenter.augment_single_text(original_text)
+        for _ in range(num_augmentations_per_original):
+            # Tokenize the full original text without adding special tokens initially,
+            # as we might need to slice it for long text handling.
+            full_tokenized = tokenizer(original_text, add_special_tokens=False, truncation=False, return_tensors="pt")
+            full_input_ids = full_tokenized['input_ids']
 
-                # Create augmented records
-                for aug_text in augmented_texts:
-                    new_row = row.copy()
-                    new_row["text_input"] = aug_text
-                    new_row["is_augmented"] = True
-                    new_row["original_index"] = idx
-                    batch_results.append(new_row)
+            augmented_text = ""
 
-                # Add original record
-                original_row = row.copy()
-                original_row["is_augmented"] = False
-                original_row["original_index"] = idx
-                batch_results.append(original_row)
+            # Handle long texts: if the tokenized text exceeds model's max sequence length
+            # (minus 2 for [CLS] and [SEP] tokens that will be added later).
+            if full_input_ids.shape[1] > (max_seq_len - 2):
+                # Calculate the maximum possible start index for a non-special token segment that fits.
+                # A segment will be `max_seq_len - 2` tokens long.
+                max_start_idx = full_input_ids.shape[1] - (max_seq_len - 2)
 
-            except Exception as e:
-                logger.error(f"Error processing record {idx}: {e}")
-                # Add original record as fallback
-                fallback_row = row.copy()
-                fallback_row["is_augmented"] = False
-                fallback_row["original_index"] = idx
-                batch_results.append(fallback_row)
+                # Randomly select a start token index for the segment
+                # Ensure the random choice is valid (at least 0, at most max_start_idx)
+                segment_start_token_idx = random.randint(0, max(0, max_start_idx))
 
-        return batch_results
+                # Extract the token IDs for the chosen segment (without special tokens)
+                raw_segment_token_ids = full_input_ids[0, segment_start_token_idx : segment_start_token_idx + (max_seq_len - 2)].tolist()
 
-    # Process in parallel batches
-    batch_size = max(1, len(train_dataset) // n_workers)
-    batches = []
+                # Convert these token IDs back to a string for re-tokenization with special tokens
+                # This ensures the tokenizer handles truncation and special tokens correctly for the segment
+                segment_string = tokenizer.decode(raw_segment_token_ids, skip_special_tokens=True)
 
-    for i in range(0, len(train_dataset), batch_size):
-        batch = [
-            (idx, row) for idx, row in train_dataset.iloc[i : i + batch_size].iterrows()
-        ]
-        batches.append(batch)
+                encoded_input_segment = tokenizer(
+                    segment_string,
+                    add_special_tokens=True,
+                    max_length=max_seq_len,
+                    truncation=True,
+                    return_tensors="pt"
+                ).to(device)
 
-    # Execute parallel processing
-    with ThreadPoolExecutor(max_workers=n_workers) as executor:
-        future_to_batch = {
-            executor.submit(process_batch, batch): batch for batch in batches
-        }
+                input_ids = encoded_input_segment['input_ids']
+                attention_mask = encoded_input_segment['attention_mask']
+                token_type_ids = encoded_input_segment['token_type_ids']
 
-        for future in as_completed(future_to_batch):
-            try:
-                batch_results = future.result()
-                augmented_records.extend(batch_results)
+                # The `_mask_tokens` function expects a tensor of shape (1, sequence_length)
+                masked_input_ids, masked_indices = _mask_tokens(input_ids, tokenizer, mask_percentage)
 
-                # Progress update
-                completed_batches = len([f for f in future_to_batch if f.done()])
-                logger.info(f"Completed batch {completed_batches}/{len(batches)}")
+                # Perform prediction using the masked segment
+                with torch.no_grad(): # Disable gradient calculation for inference
+                    logits = model(
+                        input_ids=masked_input_ids,
+                        attention_mask=attention_mask,
+                        token_type_ids=token_type_ids
+                    ).logits
 
-            except Exception as e:
-                logger.error(f"Batch processing failed: {e}")
+                # Get the predicted token IDs for the masked positions
+                predicted_token_ids = torch.argmax(logits[0, masked_indices], dim=-1)
 
-    # Create final augmented dataset
-    augmented_dataset = pd.DataFrame(augmented_records)
+                # Create a modified version of the segment's input IDs with predictions
+                modified_segment_input_ids = input_ids.clone()
+                for i, masked_idx in enumerate(masked_indices):
+                    modified_segment_input_ids[0, masked_idx] = predicted_token_ids[i]
 
-    # Reset index and clean up
-    augmented_dataset = augmented_dataset.reset_index(drop=True)
+                # Decode the augmented segment (excluding special tokens for clean concatenation)
+                augmented_segment_text = tokenizer.decode(
+                    modified_segment_input_ids[0].cpu().numpy(), skip_special_tokens=True
+                )
 
-    # Save augmented dataset
+                # Decode the original prefix and suffix parts of the text (without special tokens)
+                original_prefix_text = tokenizer.decode(
+                    full_input_ids[0, :segment_start_token_idx].tolist(), skip_special_tokens=True
+                )
+                original_suffix_text = tokenizer.decode(
+                    full_input_ids[0, segment_start_token_idx + (max_seq_len - 2):].tolist(), skip_special_tokens=True
+                )
+
+                # Reconstruct the full augmented text by combining original parts and augmented segment
+                # Use .strip() to clean up any extra spaces at the beginning/end from decoding.
+                augmented_text = (original_prefix_text + " " + augmented_segment_text + " " + original_suffix_text).strip()
+
+            else: # Text fits within or is shorter than the model's max_seq_len
+                # Standard tokenization and masking for texts that fit.
+                encoded_input = tokenizer(
+                    original_text,
+                    add_special_tokens=True,
+                    max_length=max_seq_len, # Ensure truncation to model's actual max_position_embeddings
+                    truncation=True,
+                    return_tensors="pt"
+                ).to(device) # Move directly to device
+
+                input_ids = encoded_input['input_ids']
+                attention_mask = encoded_input['attention_mask']
+                token_type_ids = encoded_input['token_type_ids'] # For BERT, segment IDs are important
+
+                # Mask tokens in the input
+                masked_input_ids, masked_indices = _mask_tokens(input_ids, tokenizer, mask_percentage)
+
+                # Perform prediction
+                with torch.no_grad():
+                    logits = model(
+                        input_ids=masked_input_ids,
+                        attention_mask=attention_mask,
+                        token_type_ids=token_type_ids
+                    ).logits
+
+                # Get the predicted token IDs for the masked positions
+                predicted_token_ids = torch.argmax(logits[0, masked_indices], dim=-1)
+
+                # Create a modified version of the input IDs with predictions
+                modified_input_ids = input_ids.clone()
+                for i, masked_idx in enumerate(masked_indices):
+                    modified_input_ids[0, masked_idx] = predicted_token_ids[i]
+
+                # Decode the augmented text (excluding special tokens)
+                augmented_text = tokenizer.decode(modified_input_ids[0].cpu().numpy(), skip_special_tokens=True)
+
+            # Create a new record with the augmented text and other original columns
+            new_record = row.to_dict()
+            new_record['text_input'] = augmented_text
+            augmented_records.append(new_record)
+
+    # Convert the list of augmented records into a new DataFrame
+    augmented_train_dataset = pd.DataFrame(augmented_records)
+
+    # 4. Save the augmented dataset to CSV
     try:
-        augmented_dataset.to_csv(output_path, index=False)
-        logger.info(f"Saved augmented dataset to {output_path}")
+        augmented_train_dataset.to_csv(save_path, index=False)
+        print(f"✅ Augmented dataset successfully saved to '{save_path}'.")
     except Exception as e:
-        logger.error(f"Failed to save dataset: {e}")
+        print(f"❌ Error saving augmented dataset to '{save_path}': {e}")
 
-    logger.info(
-        f"Augmentation completed. Original: {len(train_dataset)}, "
-        f"Augmented: {len(augmented_dataset)}"
-    )
-
-    return augmented_dataset
+    print("✨ Data augmentation complete!")
+    return augmented_train_dataset

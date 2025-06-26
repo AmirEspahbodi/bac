@@ -26,8 +26,8 @@ class DataLoaderConfig:
     pin_memory: bool = True
     drop_last: bool = False
     max_length: int = 512
-    text_column: str = "text"
-    label_column: str = "label"
+    text_column: str = "text_input"
+    label_column: str = "assignee_encoded"
 
 
 class TextDataset(Dataset):

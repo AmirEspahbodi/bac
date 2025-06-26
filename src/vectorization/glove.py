@@ -17,7 +17,7 @@ GLOVE_FILE_NAME = "glove.6B.300d.txt"
 GLOVE_EMBEDDING_DIM = 300
 GLOVE_PATH = f"./{GLOVE_DIR}/{GLOVE_FILE_NAME}"
 GLOVE_ZIP_URL = "http://nlp.stanford.edu/data/glove.6B.zip"
-GLOVE_LOCAL_ZIP_PATH = "./glove.6B.zip"
+GLOVE_LOCAL_ZIP_PATH = f"{GLOVE_DIR}/glove.6B.zip"
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
