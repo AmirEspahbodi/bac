@@ -27,13 +27,11 @@ def validation_epoch_fn(model, data_loader, loss_fn, device, description="", k_f
             epoch_loss.update(loss.item())
 
             _, predicted = torch.max(outputs.data, 1)
-            total += targets.size(0)
-            correct += (predicted == targets).sum().item()
 
             total += targets.size(0)
             correct += (predicted == targets).sum().item()
 
-            all_predictions_eval.append(predicted)
+            all_predictions_eval.append(outputs)
             all_labels_eval.append(targets)
             
             # Corrected line
