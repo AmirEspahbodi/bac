@@ -169,15 +169,15 @@ def contextual_word_replacement_augmentation(train_dataset, dataset_type: Datase
                 continue
             try:
                 # Apply the contextual word replacement function
-                augmented_text_entry = contextual_word_replacement_mlm(
+                augmented_text_entries = contextual_word_replacement_mlm(
                     entry[1]['text_input'], tokenizer, model, device,
                     n_replacements=num_replacements_per_text,
                     top_k=5
                 )
-                
-                entry_copy = entry[1].copy()
-                entry_copy["text_input"] = augmented_text_entry
-                augmented_texts_list.append(entry_copy)
+                for augmented_text_entry in augmented_text_entries:
+                    entry_copy = entry[1].copy()
+                    entry_copy["text_input"] = augmented_text_entry
+                    augmented_texts_list.append(entry_copy)
             
             except Exception as e:
                 # Log error and fallback to original text for robustness
