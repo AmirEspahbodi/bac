@@ -18,15 +18,15 @@ def train_one_epoch(
             inputs = inputs.to(device)
             targets = targets.to(device)
 
-            print("\n|---- Start debuging")
-            print(f"inputs.shape = {inputs.shape}")
-            print(f"targets.shape = {targets.shape}")
+            # print("\n|---- Start debuging")
+            # print(f"inputs.shape = {inputs.shape}")
+            # print(f"targets.shape = {targets.shape}")
             
             # Forward pass
             logits = model(inputs)
             loss = loss_fn(logits, targets)
-            print(f"logits.shape = {logits.shape}")
-            print("|---- End debuging\n\n")
+            # print(f"logits.shape = {logits.shape}")
+            # print("|---- End debuging\n\n")
 
             # Backward pass and optimization
             optimizer.zero_grad()

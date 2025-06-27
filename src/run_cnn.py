@@ -60,7 +60,7 @@ match selected_embedding:
         HIDDEN_DIM_FC2_VALUE = 128
         LABEL_SMOOTHING_FACTOR = 0.1
         GRADIENT_CLIP_VALUE = 1.0
-    case EmbeddingType.BERT | EmbeddingType.ST:
+    case EmbeddingType.BERT:
         BATCH_SIZE = 32
         LEARNING_RATE = 5e-5
         WEIGHT_DECAY = 0.01
@@ -69,11 +69,23 @@ match selected_embedding:
         N_FILTERS_LIST = [128, 128, 128]
         FILTER_SIZES_LIST = [3, 4, 5]
         DROPOUT_RATE_VALUE = 0.5
+        HIDDEN_DIM_FC1_VALUE = 512
+        HIDDEN_DIM_FC2_VALUE = 128
+        LABEL_SMOOTHING_FACTOR = 0.1
+        GRADIENT_CLIP_VALUE = 1.0
+    case EmbeddingType.ST:
+        BATCH_SIZE = 32
+        LEARNING_RATE = 5e-5
+        WEIGHT_DECAY = 0.01
+        NUM_EPOCHS = 4
+        EMBEDDING_DIM_VALUE = 384
+        N_FILTERS_LIST = [128, 128, 128]
+        FILTER_SIZES_LIST = [3, 4, 5]
+        DROPOUT_RATE_VALUE = 0.5
         HIDDEN_DIM_FC1_VALUE = 256
         HIDDEN_DIM_FC2_VALUE = 128
         LABEL_SMOOTHING_FACTOR = 0.1
         GRADIENT_CLIP_VALUE = 1.0
-
 
 # --- Early Stopping Configuration ---
 PATIENCE = 3
