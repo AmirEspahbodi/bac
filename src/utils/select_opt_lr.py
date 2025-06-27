@@ -50,4 +50,4 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
                 selected_lr = lr
         del model_adamw
 
-    selected_optimizer, selected_lr
+    return selected_optimizer, selected_lr
