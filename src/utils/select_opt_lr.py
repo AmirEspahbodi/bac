@@ -12,10 +12,10 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
 
     for lr in [0.1, 0.01, 0.001, 0.0001]:
         print(f"LR={lr}")
-        optimizer = optim.SGD(
-            model.parameters(), lr=lr, weight_decay=1e-4, momentum=0.9
-        )
         model_sgd = deepcopy(model)
+        optimizer = optim.SGD(
+            model_sgd.parameters(), lr=lr, weight_decay=1e-4, momentum=0.9
+        )
         for epoch in range(num_epochs):
             model_sgd, loss_train, accuracy = train_one_epoch(
                 model_sgd, train_loader, loss_fn, optimizer, device, epoch=epoch
@@ -27,8 +27,8 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
 
     for lr in [0.1, 0.01, 0.001, 0.0001]:
         print(f"LR={lr}")
-        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
         model_adam = deepcopy(model)
+        optimizer = optim.Adam(model_adam.parameters(), lr=lr, weight_decay=1e-4)
         for epoch in range(num_epochs):
             model_adam, loss_train, accuracy = train_one_epoch(
                 model_adam, train_loader, loss_fn, optimizer, epoch
@@ -41,8 +41,8 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
 
     for lr in [0.1, 0.01, 0.001, 0.0001]:
         print(f"LR={lr}")
-        optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
         model_adamw = deepcopy(model)
+        optimizer = optim.AdamW(model_adamw.parameters(), lr=lr, weight_decay=1e-4)
         for epoch in range(num_epochs):
             model_adamw, loss_train, accuracy = train_one_epoch(
                 model_adamw, train_loader, loss_fn, optimizer, epoch

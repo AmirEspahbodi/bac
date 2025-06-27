@@ -98,7 +98,7 @@ def contextual_data_augmentation(train_dataset: pd.DataFrame, dataset_type:Datas
 
     # 3. Augmentation Parameters
     # The number of new augmented records to create per original record.
-    num_augmentations_per_original = 3 # Randomly choose between 3 to 5 augmentations
+    num_augmentations_per_original = 2 # Randomly choose between 3 to 5 augmentations
     mask_percentage = 0.15 # Percentage of tokens to mask for MLM (e.g., 15%)
     
     # Maximum sequence length for the chosen BERT model (use model.config.max_position_embeddings for definitive value)

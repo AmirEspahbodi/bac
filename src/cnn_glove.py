@@ -1,16 +1,15 @@
 import torch
 import torch.nn as nn
+import torch.optim as optim
 from .dataset import get_data_loaders
 from .models import CNNModel
 from .utils import (
-    AverageMeter,
-    calculate_mrr_fn,
     plot_training_history,
-    top_k_accuracy_fn,
     train_one_epoch,
-    validation,
+    evaluate_epoch_fn,
     select_best_optimizer_lr,
 )
+import copy
 
 
 # --- Model & Training Configuration ---
@@ -37,7 +36,7 @@ cnn_model = CNNModel(
 ).to(DEVICE)
 
 
-selected_optimizer, selected_lr = select_best_optimizer_lr(
+selected_optimizer_class, selected_lr = select_best_optimizer_lr(
     3,
     cnn_model,
     aug_train_loader,
@@ -45,6 +44,75 @@ selected_optimizer, selected_lr = select_best_optimizer_lr(
     DEVICE
 )
 
-print(selected_optimizer, selected_lr)
+print(selected_optimizer_class, selected_lr)
 
-print(len(next(iter(aug_train_loader))))
+if selected_optimizer_class is optim.SGD:
+    optimizer = selected_optimizer_class(cnn_model.parameters(), lr=selected_lr, weight_decay=WEIGHT_DECAY, momentum=0.9)
+else:
+    optimizer = selected_optimizer_class(cnn_model.parameters(), lr=selected_lr, weight_decay=WEIGHT_DECAY, )
+    
+
+loss_train_hist = []
+loss_valid_hist = []
+
+acc_train_hist = []
+acc_valid_hist = []
+
+best_loss_valid = torch.inf
+epoch_counter = 0
+best_model_state = None
+
+
+for epoch in range(NUM_EPOCHS):
+    # Train
+    cnn_model, loss_train, acc_train = train_one_epoch(
+        cnn_model, aug_train_loader, loss_fn, optimizer, epoch
+    )
+    # Validation
+    loss_valid, acc_valid, _, _= evaluate_epoch_fn(cnn_model, test_loader, loss_fn)
+
+    loss_train_hist.append(loss_train)
+    loss_valid_hist.append(loss_valid)
+
+    acc_train_hist.append(acc_train)
+    acc_valid_hist.append(acc_valid)
+
+    if loss_valid < best_loss_valid:
+        best_loss_valid = loss_valid
+        best_model_state = copy.deepcopy(cnn_model.state_dict())
+        print(f"\t✨ New best validation loss: {best_loss_valid:.4f}%. Model saved.")
+
+
+    print(f"Valid: Loss = {loss_valid:.4}, Acc = {acc_valid:.4}")
+    print()
+
+    epoch_counter += 1
+    
+
+if best_model_state:
+    cnn_model.load_state_dict(best_model_state)
+    print("\n✅ Loaded best model based on validation accuracy for final testing.")
+else:
+    print("\n⚠️ No improvement observed. Using model from the last epoch for testing.")
+
+
+plot_training_history(NUM_EPOCHS, loss_train_hist, loss_valid_hist, acc_train_hist, acc_valid_hist)
+
+
+
+print("\n🧪 Evaluating on Test Set...")
+test_loss_final, test_acc_top1_final, test_mrr_final, _ = evaluate_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, "Testing")
+
+print(f"\n--- Test Set Results (Best Validation Model) ---")
+print(f"\tTest Loss: {test_loss_final:.4f}")
+print(f"\tTest Accuracy (Top-1): {test_acc_top1_final*100:.2f}%")
+print(f"\tTest MRR: {test_mrr_final:.4f}")
+
+
+k_values_for_test = [5, 10]
+
+for k_val in k_values_for_test:
+    if k_val == 0 or k_val == 1: continue
+    _, _, _, test_top_k_acc = evaluate_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, f"Testing (Top-{k_val})", k_for_top_k_eval=k_val)
+    if test_top_k_acc is not None:
+        print(f"\tTest Accuracy (Top-{k_val}): {test_top_k_acc*100:.2f}%")

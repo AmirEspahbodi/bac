@@ -1,5 +1,5 @@
 from .average_meter import AverageMeter
-from .metrics import calculate_mrr_fn, plot_training_history, top_k_accuracy_fn
+from .metrics import plot_training_history
 from .train_one_epoch import train_one_epoch
-from .validation_epoch import validation
+from .validation_epoch import evaluate_epoch_fn
 from .select_opt_lr import select_best_optimizer_lr
