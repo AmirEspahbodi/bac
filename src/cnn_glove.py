@@ -18,7 +18,7 @@ from pathlib import Path
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 32
 WEIGHT_DECAY = 1e-4
-NUM_EPOCHS = 5
+NUM_EPOCHS = 10
 EMBEDDING_DIM_VALUE = 300
 N_FILTERS_LIST = [512, 512, 512]
 FILTER_SIZES_LIST = [3, 4, 5]
