@@ -48,6 +48,7 @@ except argparse.ArgumentError as e:
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 match selected_embedding:
     case EmbeddingType.W2V | EmbeddingType.GLOVE:
+        print("using W2V & GLOVE embeddings")
         BATCH_SIZE = 32
         LEARNING_RATE = 1e-4
         WEIGHT_DECAY = 0.01  # for adamw
@@ -61,10 +62,11 @@ match selected_embedding:
         LABEL_SMOOTHING_FACTOR = 0.1
         GRADIENT_CLIP_VALUE = 1.0
     case EmbeddingType.BERT:
+        print("using bert embeddings")
         BATCH_SIZE = 32
         LEARNING_RATE = 5e-5
         WEIGHT_DECAY = 0.01
-        NUM_EPOCHS = 15
+        NUM_EPOCHS = 10
         EMBEDDING_DIM_VALUE = 768
         N_FILTERS_LIST = [512, 512, 512]
         FILTER_SIZES_LIST = [3, 4, 5]
@@ -74,6 +76,7 @@ match selected_embedding:
         LABEL_SMOOTHING_FACTOR = 0.1
         GRADIENT_CLIP_VALUE = 1.0
     case EmbeddingType.ST:
+        print("using st embeddings")
         BATCH_SIZE = 32
         LEARNING_RATE = 5e-5
         WEIGHT_DECAY = 0.01
