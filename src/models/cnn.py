@@ -44,7 +44,7 @@ class CNNModel(nn.Module):
 
     def forward(self, x_ids: torch.Tensor) -> torch.Tensor:
         # Permute to match Conv1d expectation: (batch_size, embed_dim, seq_length)
-        x_permuted = x_ids.permute(0, 3, 1)
+        x_permuted = x_ids.permute(0, 2, 1)
 
         conv_outputs = []
         for block in self.conv_blocks:
