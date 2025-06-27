@@ -1,4 +1,10 @@
 import os
+import copy
+import json
+from pathlib import Path
+import argparse
+from enum import Enum
+import sys
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -10,10 +16,39 @@ from .utils import (
     validation_epoch_fn,
     select_best_optimizer_lr,
 )
-import copy
-import json
-from pathlib import Path
 from src.vectorization import load_glove, get_word2vec_vectors
+
+
+class EmbeddingType(Enum):
+    GLOVE = 'glove'
+    W2V = 'w2v'
+    BERT = 'bert'
+    ELMO = 'elmo'
+
+    def __str__(self):
+        return self.value
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Run a CNN model with a specified word embedding type.")
+
+    parser.add_argument(
+        '--embedding',
+        type=str,
+        required=True,
+        choices=[e.value for e in EmbeddingType],
+        help='The type of word embedding to use.'
+    )
+
+    return parser.parse_args()
+
+try:
+    args = parse_arguments()
+    selected_embedding = EmbeddingType(args.embedding)
+
+except argparse.ArgumentError as e:
+    print(f"Error: {e}", file=sys.stderr)
+    sys.exit(1)
+
 
 # --- Model & Training Configuration ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -25,8 +60,8 @@ EMBEDDING_DIM_VALUE = 300
 N_FILTERS_LIST = [128, 128, 128]
 FILTER_SIZES_LIST = [3, 4, 5]
 DROPOUT_RATE_VALUE = 0.5
-HIDDEN_DIM_FC1_VALUE = 128
-HIDDEN_DIM_FC2_VALUE = 64
+HIDDEN_DIM_FC1_VALUE = 256
+HIDDEN_DIM_FC2_VALUE = 128
 LABEL_SMOOTHING_FACTOR = 0.1
 GRADIENT_CLIP_VALUE = 1.0
 
@@ -40,7 +75,17 @@ result_save_path=f"{os.getcwd()}/.result/cnn_glove_result.json"
 Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
 Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
-aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(load_glove)
+match selected_embedding:
+    case EmbeddingType.GLOVE:
+        aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(load_glove)
+    case EmbeddingType.W2V:
+        aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(get_word2vec_vectors)
+    case EmbeddingType.BERT:
+        print("BERT")
+    case EmbeddingType.ELMO:
+        print("ELMO")
+        
+
 loss_fn = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING_FACTOR)
 
 
