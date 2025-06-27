@@ -11,7 +11,7 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
     selected_lr = 1
 
     for lr in [0.1, 0.01, 0.001, 0.0001]:
-        print(f"LR={lr}")
+        print(f"OPTIMIZER=SGD, LR={lr}")
         model_sgd = deepcopy(model)
         optimizer = optim.SGD(
             model_sgd.parameters(), lr=lr, weight_decay=1e-4, momentum=0.9
@@ -26,7 +26,7 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
         del model_sgd
 
     for lr in [0.1, 0.01, 0.001, 0.0001]:
-        print(f"LR={lr}")
+        print(f"OPTIMIZER=Adam, LR={lr}")
         model_adam = deepcopy(model)
         optimizer = optim.Adam(model_adam.parameters(), lr=lr, weight_decay=1e-4)
         for epoch in range(num_epochs):
@@ -40,7 +40,7 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
         del model_adam
 
     for lr in [0.1, 0.01, 0.001, 0.0001]:
-        print(f"LR={lr}")
+        print(f"OPTIMIZER=Adamw, LR={lr}")
         model_adamw = deepcopy(model)
         optimizer = optim.AdamW(model_adamw.parameters(), lr=lr, weight_decay=1e-4)
         for epoch in range(num_epochs):
