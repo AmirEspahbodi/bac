@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 # --- GloVe Configuration ---
-GLOVE_DIR = ".cache/glove/"
+GLOVE_DIR = ".cache/glove"
 GLOVE_FILE_NAME = "glove.6B.300d.txt"
 GLOVE_EMBEDDING_DIM = 300
 GLOVE_PATH = f"./{GLOVE_DIR}/{GLOVE_FILE_NAME}"
