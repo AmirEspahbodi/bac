@@ -68,7 +68,7 @@ print("\n✅ Start Training ...")
 for epoch in range(NUM_EPOCHS):
     # Train
     cnn_model, loss_train, acc_train = train_one_epoch(
-        cnn_model, aug_train_loader, loss_fn, optimizer, epoch
+        cnn_model, aug_train_loader, loss_fn, optimizer, DEVICE, epoch
     )
     # Validation
     loss_valid, acc_valid, _, _= validation_epoch_fn(cnn_model, test_loader, loss_fn, DEVICE, description=f"epoch {epoch}: ")
