@@ -7,18 +7,21 @@ from pathlib import Path
 from tqdm import tqdm
 from typing import Dict, Tuple
 
-MODEL_URL = "https://s3.amazonaws.com/dl4j-distribution/GoogleNews-vectors-negative300.bin.gz"
+MODEL_URL = (
+    "https://s3.amazonaws.com/dl4j-distribution/GoogleNews-vectors-negative300.bin.gz"
+)
 COMPRESSED_FILENAME = "GoogleNews-vectors-negative300.bin.gz"
 MODEL_FILENAME = "GoogleNews-vectors-negative300.bin"
 VECTOR_DIMENSION = 300
 
+
 def get_word2vec_vectors(
-    save_dir: str = "word2vec_model"
+    save_dir: str = "word2vec_model",
 ) -> Tuple[Dict[str, np.ndarray], np.ndarray]:
     """
     Checks for a local Word2Vec model, downloads it if not present,
     and returns a vector map and an embedding for unknown words.
-    
+
     This version parses the .bin file manually and does NOT require 'gensim'.
 
     This function is designed to be efficient and user-friendly. It shows a
@@ -45,10 +48,15 @@ def get_word2vec_vectors(
                 # Streaming download with a progress bar (tqdm)
                 with requests.get(MODEL_URL, stream=True) as r:
                     r.raise_for_status()
-                    total_size = int(r.headers.get('content-length', 0))
+                    total_size = int(r.headers.get("content-length", 0))
                     block_size = 1024  # 1 Kilobyte
-                    progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True, desc=f"Downloading {COMPRESSED_FILENAME}")
-                    with open(compressed_path, 'wb') as f:
+                    progress_bar = tqdm(
+                        total=total_size,
+                        unit="iB",
+                        unit_scale=True,
+                        desc=f"Downloading {COMPRESSED_FILENAME}",
+                    )
+                    with open(compressed_path, "wb") as f:
                         for chunk in r.iter_content(chunk_size=block_size):
                             progress_bar.update(len(chunk))
                             f.write(chunk)
@@ -66,8 +74,8 @@ def get_word2vec_vectors(
 
         print(f"Decompressing {compressed_path}...")
         try:
-            with gzip.open(compressed_path, 'rb') as f_in:
-                with open(model_path, 'wb') as f_out:
+            with gzip.open(compressed_path, "rb") as f_in:
+                with open(model_path, "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
             print("Decompression complete.")
         except Exception as e:
@@ -85,42 +93,46 @@ def get_word2vec_vectors(
     try:
         with open(model_path, "rb") as f:
             # Read header
-            header = f.readline().decode('utf-8')
+            header = f.readline().decode("utf-8")
             vocab_size, vec_dim = map(int, header.split())
             print(f"Model details: {vocab_size} words, {vec_dim} dimensions.")
-            
+
             if vec_dim != VECTOR_DIMENSION:
-                raise ValueError(f"Model dimension mismatch! Expected {VECTOR_DIMENSION}, got {vec_dim}")
+                raise ValueError(
+                    f"Model dimension mismatch! Expected {VECTOR_DIMENSION}, got {vec_dim}"
+                )
 
             binary_len = np.dtype(np.float32).itemsize * vec_dim
-            
+
             # Read vocabulary and vectors
             for i in tqdm(range(vocab_size), desc="Parsing model file"):
                 # Read word
                 word_bytes = bytearray()
                 while True:
                     char_byte = f.read(1)
-                    if char_byte == b' ':
+                    if char_byte == b" ":
                         break
-                    if char_byte != b'\n': # Skip newline chars at the end of some lines
+                    if (
+                        char_byte != b"\n"
+                    ):  # Skip newline chars at the end of some lines
                         word_bytes.extend(char_byte)
-                word = word_bytes.decode('utf-8', errors='ignore')
-                
+                word = word_bytes.decode("utf-8", errors="ignore")
+
                 # Read vector
                 vector_bytes = f.read(binary_len)
                 vector = np.frombuffer(vector_bytes, dtype=np.float32)
-                
+
                 vectors_map[word] = vector
                 all_vectors.append(vector)
 
         print("Model loaded and parsed successfully.")
-        
+
         # --- Step 4: Create the 'unknown' embedding ---
         # Calculate the mean of all vectors to create a generic 'unk' vector
         print("Calculating 'unk_embedding'...")
         unk_embedding = np.mean(all_vectors, axis=0)
         print("Calculated 'unk_embedding' as the mean of all vectors.")
-        
+
         print("--- Vectorization Complete ---")
         return vectors_map, unk_embedding
 

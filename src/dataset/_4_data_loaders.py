@@ -4,14 +4,14 @@ from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizer
 from typing import List, Tuple, Dict, Any
 
+
 def create_data_loaders(
     train_dataset: pd.DataFrame,
     test_dataset: pd.DataFrame,
     validation_dataset: pd.DataFrame,
     bert_tokenizer: BertTokenizer,
     vectorization_function,
-    
-    batch_size: int = 32
+    batch_size: int = 32,
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
     Creates PyTorch DataLoaders for training, testing, and validation sets.
@@ -21,22 +21,29 @@ def create_data_loaders(
     """
 
     vectors_map, unk_embedding = vectorization_function()
+
     class TextDataset(Dataset):
         """
         A custom PyTorch Dataset for text data.
         It tokenizes the text using a BERT tokenizer upon initialization.
         """
+
         def __init__(self, dataframe: pd.DataFrame, tokenizer: BertTokenizer):
             """
             Initializes the dataset.
             """
             # Ensure the required columns exist
-            if 'text_input' not in dataframe.columns or 'assignee_encoded' not in dataframe.columns:
-                raise ValueError("Input DataFrame must have 'text_input' and 'assignee_encoded' columns.")
-                
-            self.labels = dataframe['assignee_encoded'].values
+            if (
+                "text_input" not in dataframe.columns
+                or "assignee_encoded" not in dataframe.columns
+            ):
+                raise ValueError(
+                    "Input DataFrame must have 'text_input' and 'assignee_encoded' columns."
+                )
+
+            self.labels = dataframe["assignee_encoded"].values
             # Tokenize all texts at once for efficiency
-            self.texts = [tokenizer.tokenize(text) for text in dataframe['text_input']]
+            self.texts = [tokenizer.tokenize(text) for text in dataframe["text_input"]]
 
         def __len__(self) -> int:
             """Returns the number of samples in the dataset."""
@@ -48,7 +55,9 @@ def create_data_loaders(
             """
             return self.texts[idx], self.labels[idx]
 
-    def collate_fn_glove_w2v(batch: List[Tuple[List[str], int]]) -> Tuple[torch.Tensor, torch.Tensor]:
+    def collate_fn_glove_w2v(
+        batch: List[Tuple[List[str], int]],
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         A custom collate function to process a batch of data for GloVe embeddings.
 
@@ -57,27 +66,29 @@ def create_data_loaders(
         and returns the batch as a pair of PyTorch tensors.
         """
         texts, labels = zip(*batch)
-        
+
         # Determine the length of the longest sequence in the batch
         max_len = max(len(text) for text in texts)
-        
+
         # Get the dimension of the GloVe embeddings
         embedding_dim = len(unk_embedding)
 
         # Create a tensor to hold the padded sequences of embeddings
         padded_texts = torch.zeros(len(texts), max_len, embedding_dim)
-        
+
         for i, text in enumerate(texts):
             # For each token, look up its embedding, or use the unknown embedding
-            embeddings = [torch.tensor(vectors_map.get(token, unk_embedding)) for token in text]
+            embeddings = [
+                torch.tensor(vectors_map.get(token, unk_embedding)) for token in text
+            ]
             # Stack embeddings for the current text
             if embeddings:
                 embeddings_tensor = torch.stack(embeddings)
-                padded_texts[i, :len(text)] = embeddings_tensor
+                padded_texts[i, : len(text)] = embeddings_tensor
 
         # Convert labels to a tensor
         labels_tensor = torch.tensor(labels, dtype=torch.long)
-        
+
         return padded_texts, labels_tensor
 
     # Create dataset instances
@@ -87,22 +98,16 @@ def create_data_loaders(
 
     # Create DataLoader instances
     train_loader = DataLoader(
-        train_data,
-        batch_size=batch_size,
-        shuffle=True,
-        collate_fn=collate_fn_glove_w2v
+        train_data, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_glove_w2v
     )
     test_loader = DataLoader(
-        test_data,
-        batch_size=batch_size,
-        shuffle=False,
-        collate_fn=collate_fn_glove_w2v
+        test_data, batch_size=batch_size, shuffle=False, collate_fn=collate_fn_glove_w2v
     )
     validation_loader = DataLoader(
         validation_data,
         batch_size=batch_size,
         shuffle=False,
-        collate_fn=collate_fn_glove_w2v
+        collate_fn=collate_fn_glove_w2v,
     )
 
     return train_loader, test_loader, validation_loader

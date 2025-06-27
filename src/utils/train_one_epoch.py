@@ -3,7 +3,9 @@ from tqdm import tqdm
 from .average_meter import AverageMeter
 
 
-def train_one_epoch(model, train_loader, loss_fn, optimizer, device, clip_value, epoch=None):
+def train_one_epoch(
+    model, train_loader, loss_fn, optimizer, device, clip_value, epoch=None
+):
     model.train()
     loss_train = AverageMeter()
     correct = 0
@@ -23,10 +25,10 @@ def train_one_epoch(model, train_loader, loss_fn, optimizer, device, clip_value,
             # Backward pass and optimization
             optimizer.zero_grad()
             loss.backward()
-            
+
             # ** Gradient Clipping **
             torch.nn.utils.clip_grad_norm_(model.parameters(), clip_value)
-            
+
             optimizer.step()
 
             loss_train.update(loss.item())

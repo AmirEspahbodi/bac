@@ -13,7 +13,9 @@ def get_data_loaders(vectiriation_function):
         DatasetType.GCC, dataset_rpath="./datasets/gcc_data.csv"
     )
     train_dataset, test_dataset, validation_dataset = slit_dataset(dataset)
-    aug_train_dataset = contextual_word_replacement_augmentation(train_dataset, DatasetType.GCC)
+    aug_train_dataset = contextual_word_replacement_augmentation(
+        train_dataset, DatasetType.GCC
+    )
     bert_tokenizer = get_bert_tokenizer()
     aug_train_loader, val_loader, test_loader = create_data_loaders(
         aug_train_dataset,
