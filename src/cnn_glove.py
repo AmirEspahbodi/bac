@@ -132,5 +132,5 @@ result = {
 print(result)
 
 # Save to JSON file
-with open("./.result/cnn_glove_result.json", "w") as f:
+with open(f"{os.getcwd()}/.result/cnn_glove_result.json", "w") as f:
     json.dump(result, f, indent=4)
