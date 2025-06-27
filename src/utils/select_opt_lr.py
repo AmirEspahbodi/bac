@@ -4,8 +4,8 @@ from .train_one_epoch import train_one_epoch
 
 
 def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
-    best_accuracy = float("inf")
-    best_loss = float("+inf")
+    best_accuracy = -1
+    best_loss = float("-inf")
     selected_optimizer = None
     selected_lr = 1
 
