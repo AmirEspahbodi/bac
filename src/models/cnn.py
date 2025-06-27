@@ -51,7 +51,7 @@ class CNNModel(nn.Module):
         conv_outputs = []
         for block in self.conv_blocks:
             conv_output = block(x_permuted)
-            conv_output = F.gelu(conv_output)
+            conv_output = F.relu(conv_output)
             
             pooled_output = F.max_pool1d(
                 conv_output, kernel_size=conv_output.size(2)
@@ -65,13 +65,13 @@ class CNNModel(nn.Module):
         # Fully Connected Layer 1 (Output size: 256)
         x_fc1 = self.fc1(x_dropped_out_conv)
         x_bn_fc1 = self.bn_fc1(x_fc1)
-        x_activated_fc1 = F.gelu(x_bn_fc1)
+        x_activated_fc1 = F.relu(x_bn_fc1)
         x_dropped_out_fc1 = self.dropout_fc1(x_activated_fc1)
         
         # CHANGE: Forward pass through the new FC Layer 2 (Output size: 128)
         x_fc2 = self.fc2(x_dropped_out_fc1)
         x_bn_fc2 = self.bn_fc2(x_fc2)
-        x_activated_fc2 = F.gelu(x_bn_fc2)
+        x_activated_fc2 = F.relu(x_bn_fc2)
         x_dropped_out_fc2 = self.dropout_fc2(x_activated_fc2)
         
         # CHANGE: Pass through the final output layer to get logits
