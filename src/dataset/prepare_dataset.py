@@ -2,7 +2,7 @@ from ._1_load_dataset import load_dataset
 from ._2_splitting import slit_dataset
 from ._3_data_augmentation import contextual_data_augmentation
 from ._3_2_data_augmentation import contextual_word_replacement_augmentation
-from ._4_data_loaders import create_data_loaders_word_embedding, create_data_loaders_contectualized
+from ._4_data_loaders import create_data_loaders_word_embedding#, create_data_loaders_contectualized
 from ._dataset_types import DatasetType
 from src.vectorization import VectorizationsType
 from src.tokenization import get_bert_tokenizer
