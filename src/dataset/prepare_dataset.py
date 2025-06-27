@@ -41,7 +41,7 @@ def get_data_loaders(embedding_type:EmbeddingType):
                 validation_df=test_dataset,
                 test_df=validation_dataset,
                 bert_tokenizer=bert_tokenizer,
-                batch_size=2, # Small batch size for demonstration
+                batch_size=3, # Small batch size for demonstration
                 embedding_type=EmbeddingType.BERT
             )
         case EmbeddingType.ST:
@@ -50,7 +50,7 @@ def get_data_loaders(embedding_type:EmbeddingType):
                 validation_df=test_dataset,
                 test_df=validation_dataset,
                 bert_tokenizer=bert_tokenizer,
-                batch_size=2, # Small batch size for demonstration
+                batch_size=3, # Small batch size for demonstration
                 embedding_type=EmbeddingType.ST
             )
     return aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS

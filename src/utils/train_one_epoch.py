@@ -18,7 +18,7 @@ def train_one_epoch(
             inputs = inputs.to(device)
             targets = targets.to(device)
 
-            print("|---- Start debuging")
+            print("\n|---- Start debuging")
             print(f"inputs.shape = {inputs.shape}")
             print(f"targets.shape = {targets.shape}")
             
