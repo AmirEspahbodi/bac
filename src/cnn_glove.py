@@ -126,6 +126,7 @@ result = {
     "test_acc_top1_final": test_acc_top1_final,
     "test_mrr_final": test_mrr_final
 }
+print(result)
 
 # Save to JSON file
 with open("./.result/cnn_glove_result.json", "w") as f:
