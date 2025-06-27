@@ -146,7 +146,7 @@ class ModernEmbeddingCollator:
     def __init__(self,
                  bert_tokenizer: BertTokenizer,
                  embedding_type: EmbeddingType,
-                 bert_model_name: str = 'bert-large-uncased',
+                 bert_model_name: str = 'bert-base-uncased',
                  st_model_name: str = 'all-MiniLM-L6-v2',
                  device: str = 'cpu'):
         self.device = torch.device(device)
@@ -175,7 +175,7 @@ class ModernEmbeddingCollator:
                     )
                     bert_inputs = {k: v.to(self.device) for k, v in bert_inputs.items()}
                     bert_outputs = self.bert_model(**bert_inputs)
-                    embeddings = bert_outputs.last_hidden_state[:, 0, :]
+                    embeddings = bert_outputs.last_hidden_state
                 case EmbeddingType.ST:
                     embeddings = self.st_model.encode(
                         texts, convert_to_tensor=True, device=self.device

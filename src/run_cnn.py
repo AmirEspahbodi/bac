@@ -46,21 +46,37 @@ except argparse.ArgumentError as e:
 
 # --- Model & Training Configuration ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 32
-LEARNING_RATE = 1e-4
-WEIGHT_DECAY = 0.01  # for adamw
-NUM_EPOCHS = 7
-EMBEDDING_DIM_VALUE = 300
-N_FILTERS_LIST = [128, 128, 128]
-FILTER_SIZES_LIST = [3, 4, 5]
-DROPOUT_RATE_VALUE = 0.5
-HIDDEN_DIM_FC1_VALUE = 256
-HIDDEN_DIM_FC2_VALUE = 128
-LABEL_SMOOTHING_FACTOR = 0.1
-GRADIENT_CLIP_VALUE = 1.0
+match selected_embedding:
+    case EmbeddingType.W2V | EmbeddingType.GLOVE:
+        BATCH_SIZE = 32
+        LEARNING_RATE = 1e-4
+        WEIGHT_DECAY = 0.01  # for adamw
+        NUM_EPOCHS = 7
+        EMBEDDING_DIM_VALUE = 300
+        N_FILTERS_LIST = [128, 128, 128]
+        FILTER_SIZES_LIST = [3, 4, 5]
+        DROPOUT_RATE_VALUE = 0.5
+        HIDDEN_DIM_FC1_VALUE = 256
+        HIDDEN_DIM_FC2_VALUE = 128
+        LABEL_SMOOTHING_FACTOR = 0.1
+        GRADIENT_CLIP_VALUE = 1.0
+    case EmbeddingType.BERT | EmbeddingType.ST:
+        BATCH_SIZE = 32
+        LEARNING_RATE = 5e-5
+        WEIGHT_DECAY = 0.01
+        NUM_EPOCHS = 4
+        EMBEDDING_DIM_VALUE = 768
+        N_FILTERS_LIST = [128, 128, 128]
+        FILTER_SIZES_LIST = [3, 4, 5]
+        DROPOUT_RATE_VALUE = 0.5
+        HIDDEN_DIM_FC1_VALUE = 256
+        HIDDEN_DIM_FC2_VALUE = 128
+        LABEL_SMOOTHING_FACTOR = 0.1
+        GRADIENT_CLIP_VALUE = 1.0
+
 
 # --- Early Stopping Configuration ---
-PATIENCE = 5
+PATIENCE = 3
 MIN_DELTA = 0.0001
 
 
