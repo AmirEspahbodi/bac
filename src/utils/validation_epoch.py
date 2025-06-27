@@ -24,7 +24,6 @@ def validation_epoch_fn(model, data_loader, loss_fn, device, description="", k_f
             outputs = model(inputs)
             loss = loss_fn(outputs, targets)
 
-            acc_top1 = (outputs.argmax(dim=1) == targets).float().mean().item()
 
             epoch_loss.update(loss.item())
 
@@ -32,8 +31,10 @@ def validation_epoch_fn(model, data_loader, loss_fn, device, description="", k_f
             total += targets.size(0)
             correct += (predicted == targets).sum().item()
 
+            acc_top1 = (predicted.argmax(dim=1) == targets).float().mean().item()
             epoch_accuracy_top1.update(acc_top1, targets.size(0))
-            all_predictions_eval.append(outputs)
+
+            all_predictions_eval.append(predicted)
             all_labels_eval.append(targets)
             # Corrected line:
             progress_bar.set_postfix(loss=f"{epoch_loss.avg:.4f}", acc=f"{epoch_accuracy_top1.avg:.4f}")
