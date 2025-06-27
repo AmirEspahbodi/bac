@@ -20,6 +20,7 @@ def validation_epoch_fn(model, data_loader, loss_fn, device, description="", k_f
             inputs = inputs.to(device)
             targets = targets.to(device)
 
+            # Forward pass
             outputs = model(inputs)
             loss = loss_fn(outputs, targets)
 

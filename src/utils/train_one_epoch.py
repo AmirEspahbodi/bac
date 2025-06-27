@@ -3,7 +3,7 @@ from tqdm import tqdm
 from .average_meter import AverageMeter
 
 
-def train_one_epoch(model, train_loader, loss_fn, optimizer, device, epoch=None):
+def train_one_epoch(model, train_loader, loss_fn, optimizer, device, clip_value, epoch=None):
     model.train()
     loss_train = AverageMeter()
     correct = 0
@@ -16,17 +16,22 @@ def train_one_epoch(model, train_loader, loss_fn, optimizer, device, epoch=None)
             inputs = inputs.to(device)
             targets = targets.to(device)
 
-            outputs = model(inputs)
+            # Forward pass
+            logits = model(inputs)
+            loss = loss_fn(logits, targets)
 
-            loss = loss_fn(outputs, targets)
-
+            # Backward pass and optimization
             optimizer.zero_grad()
             loss.backward()
+            
+            # ** Gradient Clipping **
+            torch.nn.utils.clip_grad_norm_(model.parameters(), clip_value)
+            
             optimizer.step()
 
             loss_train.update(loss.item())
 
-            _, predicted = torch.max(outputs.data, 1)
+            _, predicted = torch.max(logits.data, 1)
             total += targets.size(0)
             correct += (predicted == targets).sum().item()
 

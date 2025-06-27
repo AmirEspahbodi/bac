@@ -17,13 +17,16 @@ from pathlib import Path
 # --- Model & Training Configuration ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 32
-WEIGHT_DECAY = 1e-4
-NUM_EPOCHS = 10
+LEARNING_RATE = 1e-4
+WEIGHT_DECAY = 0.01
+NUM_EPOCHS = 15
 EMBEDDING_DIM_VALUE = 300
-N_FILTERS_LIST = [512, 512, 512]
+N_FILTERS_LIST = [256, 256, 256]
 FILTER_SIZES_LIST = [3, 4, 5]
 DROPOUT_RATE_VALUE = 0.5
 HIDDEN_DIM_FC_VALUE = 256
+LABEL_SMOOTHING_FACTOR = 0.1
+GRADIENT_CLIP_VALUE = 1.0
 
 # --- Early Stopping Configuration ---
 PATIENCE = 5
@@ -36,7 +39,8 @@ Path(model_save_path).mkdir(parents=True, exist_ok=True)
 Path(result_save_path).mkdir(parents=True, exist_ok=True)
 
 aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders()
-loss_fn = nn.CrossEntropyLoss()
+loss_fn = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING_FACTOR)
+
 
 cnn_model = CNNModel(
     embed_dim=EMBEDDING_DIM_VALUE,
@@ -63,6 +67,9 @@ if selected_optimizer_class is optim.SGD:
 else:
     optimizer = selected_optimizer_class(cnn_model.parameters(), lr=selected_lr, weight_decay=WEIGHT_DECAY, )
     
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+    optimizer, T_max=NUM_EPOCHS, eta_min=1e-6
+)
 
 loss_train_hist = []
 loss_valid_hist = []
@@ -80,44 +87,52 @@ best_model_state = None
 print("\n✅ Start Training ...")
 
 for epoch in range(NUM_EPOCHS):
-    print(f"Epoch {epoch + 1}/{NUM_EPOCHS}")
+    print(f"Epoch {epoch + 1}/{NUM_EPOCHS} | Current LR: {optimizer.param_groups[0]['lr']:.6f}")
 
+    # --- Train for one epoch ---
     cnn_model, loss_train, acc_train = train_one_epoch(
-        cnn_model, aug_train_loader, loss_fn, optimizer, DEVICE, epoch+1
+        cnn_model, aug_train_loader, loss_fn, optimizer, DEVICE, GRADIENT_CLIP_VALUE, epoch=epoch+1
     )
     
-    current_val_loss, current_val_acc, _, _ = validation_epoch_fn(
-        cnn_model, val_loader, loss_fn, DEVICE, description=f"Validation epoch {epoch + 1}: "
+    # --- Validate for one epoch ---
+    current_val_loss, current_val_acc = validation_epoch_fn(
+        cnn_model, val_loader, loss_fn, DEVICE, description=f"Validation {epoch + 1}"
     )
 
-    loss_train_hist.append(loss_train)
+    # --- Update history ---
+    loss_train_hist = [].append(loss_train)
     loss_valid_hist.append(current_val_loss)
-
     acc_train_hist.append(acc_train)
     acc_valid_hist.append(current_val_acc)
 
     print(f"\tTrain: Loss = {loss_train:.4f}, Acc = {acc_train:.4f}")
     print(f"\tValid: Loss = {current_val_loss:.4f}, Acc = {current_val_acc:.4f}")
 
+    # --- Early Stopping and Model Checkpointing ---
     if current_val_loss < best_val_loss - MIN_DELTA: 
         best_val_loss = current_val_loss
         epochs_no_improve = 0
         best_model_state = copy.deepcopy(cnn_model.state_dict())
-        print(f"\t✨ New best validation loss: {best_val_loss:.4f}. Model state saved.")
+        torch.save(best_model_state, model_save_path)
+        print(f"\t✨ New best validation loss: {best_val_loss:.4f}. Model state saved to {model_save_path}")
     else:
         epochs_no_improve += 1
         print(f"\tValidation loss did not improve. Patience: {epochs_no_improve}/{PATIENCE}")
-        if epochs_no_improve >= PATIENCE:
-            print(f"\n🛑 Early stopping triggered at epoch {epoch + 1} due to no improvement for {PATIENCE} epochs.")
-            early_stop_triggered = True
-            break
 
-    print("-" * 50) 
+    # --- Step the scheduler ---
+    scheduler.step()
+
+    if epochs_no_improve >= PATIENCE:
+        print(f"\n🛑 Early stopping triggered at epoch {epoch + 1}.")
+        break
+    
+    print("-" * 60) 
+    
     
 
 if best_model_state:
     cnn_model.load_state_dict(best_model_state)
-    torch.save(cnn_model, )
+    torch.save(cnn_model, model_save_path)
     print("\n✅ Loaded best model based on validation accuracy for final testing.")
 else:
     print("\n⚠️ No improvement observed. Using model from the last epoch for testing.")
