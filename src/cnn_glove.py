@@ -10,7 +10,7 @@ from .utils import (
     select_best_optimizer_lr,
 )
 import copy
-
+import json
 
 # --- Model & Training Configuration ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -54,9 +54,9 @@ else:
 
 loss_train_hist = []
 loss_valid_hist = []
-
 acc_train_hist = []
 acc_valid_hist = []
+
 
 best_loss_valid = torch.inf
 epoch_counter = 0
@@ -91,6 +91,7 @@ for epoch in range(NUM_EPOCHS):
 
 if best_model_state:
     cnn_model.load_state_dict(best_model_state)
+    torch.save(cnn_model, f"./.models/cnn_glove_model.pt")
     print("\n✅ Loaded best model based on validation accuracy for final testing.")
 else:
     print("\n⚠️ No improvement observed. Using model from the last epoch for testing.")
@@ -111,8 +112,21 @@ print(f"\tTest MRR: {test_mrr_final:.4f}")
 
 k_values_for_test = [5, 10]
 
-for k_val in k_values_for_test:
-    if k_val == 0 or k_val == 1: continue
-    _, _, _, test_top_k_acc = evaluate_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, f"Testing (Top-{k_val})", k_for_top_k_eval=k_val)
-    if test_top_k_acc is not None:
-        print(f"\tTest Accuracy (Top-{k_val}): {test_top_k_acc*100:.2f}%")
+_, _, _, test_top_5_acc = evaluate_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, f"Testing (Top-{5})", k_for_top_k_eval=5)
+_, _, _, test_top_10_acc = evaluate_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, f"Testing (Top-{10})", k_for_top_k_eval=10)
+
+result = {
+    "loss_train_hist": loss_train_hist,
+    "loss_valid_hist": loss_valid_hist,
+    "acc_train_hist": acc_train_hist,
+    "acc_valid_hist": acc_valid_hist,
+    "test_top_5_acc": test_top_5_acc,
+    "test_top_10_acc": test_top_10_acc,
+    "test_loss_final": test_loss_final,
+    "test_acc_top1_final": test_acc_top1_final,
+    "test_mrr_final": test_mrr_final
+}
+
+# Save to JSON file
+with open("./.result/cnn_glove_result.json", "w") as f:
+    json.dump(result, f, indent=4)
