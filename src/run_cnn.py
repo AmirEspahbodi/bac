@@ -190,7 +190,7 @@ plot_training_history(NUM_EPOCHS, loss_train_hist, loss_valid_hist, acc_train_hi
 
 print("\n🧪 Evaluating on Test Set...")
 test_loss_final, test_acc_top1_final, test_mrr_final, _ = test_loss_final, test_acc_top1_final, test_mrr_final, _ = validation_epoch_fn(
-        cnn_model, test_loader, loss_fn, DEVICE, description=f"Validation {epoch + 1}"
+        cnn_model, test_loader, loss_fn, DEVICE, description=f"Testing"
     )
 
 print(f"\n--- Test Set Results (Best Validation Model) ---")
@@ -201,8 +201,8 @@ print(f"\tTest MRR: {test_mrr_final:.4f}")
 
 k_values_for_test = [5, 10]
 
-_, _, _, test_top_5_acc = validation_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, f"Testing (Top-{5})", k_for_top_k_eval=5)
-_, _, _, test_top_10_acc = validation_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, f"Testing (Top-{10})", k_for_top_k_eval=10)
+_, _, _, test_top_5_acc = validation_epoch_fn(cnn_model, test_loader, loss_fn, DEVICE, f"Testing (Top-{5})", k_for_top_k_eval=5)
+_, _, _, test_top_10_acc = validation_epoch_fn(cnn_model, test_loader, loss_fn, DEVICE, f"Testing (Top-{10})", k_for_top_k_eval=10)
 
 result = {
     "loss_train_hist": loss_train_hist,
