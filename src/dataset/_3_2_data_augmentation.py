@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from ._dataset_types import DatasetType
 import random
-import tqdm
+from tqdm import tqdm
 from transformers import BertTokenizer, BertForMaskedLM
 
 # --- Function for Contextual Word Replacement using Masked LM ---
