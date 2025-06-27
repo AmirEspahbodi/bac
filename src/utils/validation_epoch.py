@@ -3,26 +3,41 @@ import tqdm
 from .average_meter import AverageMeter
 from .metrics import calculate_mrr_fn, top_k_accuracy_fn
 
-# --- Evaluation Function with tqdm, Top-k, and MRR ---
-def evaluate_epoch_fn(model_to_eval, data_loader, loss_criterion, current_device, description="", k_for_top_k_eval=None):
-    model_to_eval.eval()
+def validation_epoch_fn(model, data_loader, loss_fn, device, description="", k_for_top_k_eval=None):
+    model.eval()
     epoch_loss = AverageMeter()
     epoch_accuracy_top1 = AverageMeter()
+
     all_predictions_eval = []
     all_labels_eval = []
+    
+    correct = 0
+    total = 0
+
     progress_bar = tqdm(data_loader, desc=description, leave=False, unit="batch")
+    
     with torch.no_grad():
-        for texts_padded, labels_batch in progress_bar:
-            texts_padded, labels_batch = texts_padded.to(current_device), labels_batch.to(current_device)
-            predictions = model_to_eval(texts_padded)
-            loss = loss_criterion(predictions, labels_batch)
-            acc_top1 = (predictions.argmax(dim=1) == labels_batch).float().mean().item()
-            epoch_loss.update(loss.item(), labels_batch.size(0))
-            epoch_accuracy_top1.update(acc_top1, labels_batch.size(0))
-            all_predictions_eval.append(predictions.cpu())
-            all_labels_eval.append(labels_batch.cpu())
+        for inputs, targets in progress_bar:
+            inputs = inputs.to(device)
+            targets = targets.to(device)
+
+            outputs = model(inputs)
+            loss = loss_fn(outputs, targets)
+
+            acc_top1 = (outputs.argmax(dim=1) == targets).float().mean().item()
+
+            epoch_loss.update(loss.item())
+
+            _, predicted = torch.max(outputs.data, 1)
+            total += targets.size(0)
+            correct += (predicted == targets).sum().item()
+
+            epoch_accuracy_top1.update(acc_top1, targets.size(0))
+            all_predictions_eval.append(outputs)
+            all_labels_eval.append(targets)
             # Corrected line:
             progress_bar.set_postfix(loss=f"{epoch_loss.avg:.4f}", acc=f"{epoch_accuracy_top1.avg:.4f}")
+
     progress_bar.close()
     calculated_top_k_acc = None
     calculated_mrr = 0.0

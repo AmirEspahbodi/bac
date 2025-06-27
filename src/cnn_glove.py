@@ -6,7 +6,7 @@ from .models import CNNModel
 from .utils import (
     plot_training_history,
     train_one_epoch,
-    evaluate_epoch_fn,
+    validation_epoch_fn,
     select_best_optimizer_lr,
 )
 import copy
@@ -71,7 +71,7 @@ for epoch in range(NUM_EPOCHS):
         cnn_model, aug_train_loader, loss_fn, optimizer, epoch
     )
     # Validation
-    loss_valid, acc_valid, _, _= evaluate_epoch_fn(cnn_model, test_loader, loss_fn, DEVICE)
+    loss_valid, acc_valid, _, _= validation_epoch_fn(cnn_model, test_loader, loss_fn, DEVICE)
 
     loss_train_hist.append(loss_train)
     loss_valid_hist.append(loss_valid)
@@ -104,7 +104,7 @@ plot_training_history(NUM_EPOCHS, loss_train_hist, loss_valid_hist, acc_train_hi
 
 
 print("\n🧪 Evaluating on Test Set...")
-test_loss_final, test_acc_top1_final, test_mrr_final, _ = evaluate_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, "Testing")
+test_loss_final, test_acc_top1_final, test_mrr_final, _ = validation_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, "Testing")
 
 print(f"\n--- Test Set Results (Best Validation Model) ---")
 print(f"\tTest Loss: {test_loss_final:.4f}")
@@ -114,8 +114,8 @@ print(f"\tTest MRR: {test_mrr_final:.4f}")
 
 k_values_for_test = [5, 10]
 
-_, _, _, test_top_5_acc = evaluate_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, f"Testing (Top-{5})", k_for_top_k_eval=5)
-_, _, _, test_top_10_acc = evaluate_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, f"Testing (Top-{10})", k_for_top_k_eval=10)
+_, _, _, test_top_5_acc = validation_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, f"Testing (Top-{5})", k_for_top_k_eval=5)
+_, _, _, test_top_10_acc = validation_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, f"Testing (Top-{10})", k_for_top_k_eval=10)
 
 result = {
     "loss_train_hist": loss_train_hist,
