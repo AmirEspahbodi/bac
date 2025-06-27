@@ -148,8 +148,8 @@ def contextual_word_replacement_augmentation(train_dataset, dataset_type: Datase
         print(f"Successfully loaded tokenizer and model: {model_name}")
     except Exception as e:
         print(f"Error loading Hugging Face model/tokenizer ('{model_name}'): {e}.")
-        print("Augmentation will be skipped. 'aug_val_train_dataset' will be a direct copy of 'train_dataset'.")
-        # If model loading fails, aug_val_train_dataset will be a copy of the original
+        print("Augmentation will be skipped. 'aug_train_dataset' will be a direct copy of 'train_dataset'.")
+        # If model loading fails, aug_train_dataset will be a copy of the original
         # You might want to handle this more gracefully depending on the application,
         # e.g., by exiting or falling back to a simpler augmentation.
         
@@ -185,10 +185,10 @@ def contextual_word_replacement_augmentation(train_dataset, dataset_type: Datase
 
         # Assign the list of augmented texts back to the DataFrame column
         augmented_df = pd.DataFrame(augmented_texts_list)
-        aug_val_train_dataset = pd.concat([train_dataset, augmented_df], ignore_index=True)
+        aug_train_dataset = pd.concat([train_dataset, augmented_df], ignore_index=True)
 
         print("Contextual Word Replacement Augmentation complete.")
-        print(f"Shape of aug_val_train_dataset: {aug_val_train_dataset.shape}")
+        print(f"Shape of aug_train_dataset: {aug_train_dataset.shape}")
         
         # Optional: Display a few examples of original vs. augmented text
         print("\n--- Example of Original vs. Augmented Text ---")
@@ -196,7 +196,7 @@ def contextual_word_replacement_augmentation(train_dataset, dataset_type: Datase
         if num_examples_to_show > 0:
             for i in range(num_examples_to_show):
                 original_text_example = train_dataset['text_input'].iloc[i]
-                augmented_text_example = aug_val_train_dataset['text_input'].iloc[i]
+                augmented_text_example = aug_train_dataset['text_input'].iloc[i]
                 
                 print(f"\nExample {i+1}:")
                 print(f"Original:   {str(original_text_example)[:150]}...")
@@ -210,5 +210,14 @@ def contextual_word_replacement_augmentation(train_dataset, dataset_type: Datase
             print("Not enough data in train_dataset to show examples.")
     else:
         # This block executes if model loading failed earlier
-        print("'aug_val_train_dataset' is a copy of 'train_dataset' as augmentation was skipped due to model loading issues.")
-        print(f"Shape of aug_val_train_dataset (copy): {aug_val_train_dataset.shape}")
+        print("'aug_train_dataset' is a copy of 'train_dataset' as augmentation was skipped due to model loading issues.")
+        print(f"Shape of aug_train_dataset (copy): {aug_train_dataset.shape}")
+
+    try:
+        aug_train_dataset.to_csv(save_path, index=False)
+        print(f"✅ Augmented dataset successfully saved to '{save_path}'.")
+    except Exception as e:
+        print(f"❌ Error saving augmented dataset to '{save_path}': {e}")
+
+
+    return aug_train_dataset
