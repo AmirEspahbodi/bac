@@ -133,8 +133,7 @@ for epoch in range(NUM_EPOCHS):
 
 if best_model_state:
     cnn_model.load_state_dict(best_model_state)
-    with open(model_save_path, "w") as fp:
-        torch.save(cnn_model, fp)
+    torch.save(cnn_model, model_save_path)
     print("\n✅ Loaded best model based on validation accuracy for final testing.")
 else:
     print("\n⚠️ No improvement observed. Using model from the last epoch for testing.")
