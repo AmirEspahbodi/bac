@@ -18,8 +18,8 @@ from pathlib import Path
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-4
-WEIGHT_DECAY = 0.01
-NUM_EPOCHS = 15
+WEIGHT_DECAY = 0.01 # for adamw
+NUM_EPOCHS = 7
 EMBEDDING_DIM_VALUE = 300
 N_FILTERS_LIST = [256, 256, 256]
 FILTER_SIZES_LIST = [3, 4, 5]
@@ -95,7 +95,7 @@ for epoch in range(NUM_EPOCHS):
     )
     
     # --- Validate for one epoch ---
-    current_val_loss, current_val_acc = validation_epoch_fn(
+    current_val_loss, current_val_acc, _, _ = validation_epoch_fn(
         cnn_model, val_loader, loss_fn, DEVICE, description=f"Validation {epoch + 1}"
     )
 
