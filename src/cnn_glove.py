@@ -25,6 +25,11 @@ FILTER_SIZES_LIST = [3, 4, 5]
 DROPOUT_RATE_VALUE = 0.5
 HIDDEN_DIM_FC_VALUE = 256
 
+# --- Early Stopping Configuration ---
+PATIENCE = 5
+MIN_DELTA = 0.0001
+
+
 model_save_path = f"{os.getcwd()}/.models/cnn_glove_model.pt"
 result_save_path=f"{os.getcwd()}/.result/cnn_glove_result.json"
 Path(model_save_path).mkdir(parents=True, exist_ok=True)
@@ -65,37 +70,49 @@ acc_train_hist = []
 acc_valid_hist = []
 
 
-best_loss_valid = torch.inf
-epoch_counter = 0
-best_model_state = None
+best_val_loss = float('inf')
+epochs_no_improve = 0
+early_stop_triggered = False
+
+best_model_state = None 
 
 
 print("\n✅ Start Training ...")
 
 for epoch in range(NUM_EPOCHS):
-    # Train
+    print(f"Epoch {epoch + 1}/{NUM_EPOCHS}")
+
     cnn_model, loss_train, acc_train = train_one_epoch(
-        cnn_model, aug_train_loader, loss_fn, optimizer, DEVICE, epoch
+        cnn_model, aug_train_loader, loss_fn, optimizer, DEVICE, epoch+1
     )
-    # Validation
-    loss_valid, acc_valid, _, _= validation_epoch_fn(cnn_model, test_loader, loss_fn, DEVICE, description=f"epoch {epoch}: ")
+    
+    current_val_loss, current_val_acc, _, _ = validation_epoch_fn(
+        cnn_model, val_loader, loss_fn, DEVICE, description=f"Validation epoch {epoch + 1}: "
+    )
 
     loss_train_hist.append(loss_train)
-    loss_valid_hist.append(loss_valid)
+    loss_valid_hist.append(current_val_loss)
 
     acc_train_hist.append(acc_train)
-    acc_valid_hist.append(acc_valid)
+    acc_valid_hist.append(current_val_acc)
 
-    if loss_valid < best_loss_valid:
-        best_loss_valid = loss_valid
+    print(f"\tTrain: Loss = {loss_train:.4f}, Acc = {acc_train:.4f}")
+    print(f"\tValid: Loss = {current_val_loss:.4f}, Acc = {current_val_acc:.4f}")
+
+    if current_val_loss < best_val_loss - MIN_DELTA: 
+        best_val_loss = current_val_loss
+        epochs_no_improve = 0
         best_model_state = copy.deepcopy(cnn_model.state_dict())
-        print(f"\t✨ New best validation loss: {best_loss_valid:.4f}%. Model saved.")
+        print(f"\t✨ New best validation loss: {best_val_loss:.4f}. Model state saved.")
+    else:
+        epochs_no_improve += 1
+        print(f"\tValidation loss did not improve. Patience: {epochs_no_improve}/{PATIENCE}")
+        if epochs_no_improve >= PATIENCE:
+            print(f"\n🛑 Early stopping triggered at epoch {epoch + 1} due to no improvement for {PATIENCE} epochs.")
+            early_stop_triggered = True
+            break
 
-
-    print(f"Valid: Loss = {loss_valid:.4}, Acc = {acc_valid:.4}")
-    print()
-
-    epoch_counter += 1
+    print("-" * 50) 
     
 
 if best_model_state:
