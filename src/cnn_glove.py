@@ -42,6 +42,7 @@ selected_optimizer, selected_lr = select_best_optimizer_lr(
     cnn_model,
     aug_train_loader,
     loss_fn,
+    DEVICE
 )
 
 print(selected_optimizer, selected_lr)
