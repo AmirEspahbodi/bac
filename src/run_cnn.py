@@ -2,6 +2,7 @@ import os
 import copy
 import json
 from pathlib import Path
+import matplotlib.pyplot as plt
 import argparse
 from enum import Enum
 import sys
@@ -11,7 +12,6 @@ import torch.optim as optim
 from .dataset import get_data_loaders
 from .models import CNNModel
 from .utils import (
-    plot_training_history,
     train_one_epoch,
     validation_epoch_fn,
     select_best_optimizer_lr,
@@ -211,9 +211,30 @@ else:
     print("\n⚠️ No improvement observed. Using model from the last epoch for testing.")
 
 
-plot_training_history(
-    NUM_EPOCHS, loss_train_hist, loss_valid_hist, acc_train_hist, acc_valid_hist
-)
+epochs_range = range(1, NUM_EPOCHS + 1)
+
+plt.figure(figsize=(14, 6))
+
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, loss_train_hist, "bo-", label="Training Loss")
+plt.plot(epochs_range, loss_valid_hist, "ro-", label="Validation Loss")
+plt.title("Training and Validation Loss")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.legend()
+plt.grid(True)
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, acc_train_hist, "bo-", label="Training Accuracy (Top-1)")
+plt.plot(epochs_range, acc_valid_hist, "ro-", label="Validation Accuracy (Top-1)")
+plt.title("Training and Validation Accuracy (Top-1)")
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy")
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
+plt.show()
 
 
 print("\n🧪 Evaluating on Test Set...")
