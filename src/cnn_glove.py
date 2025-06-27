@@ -63,13 +63,15 @@ epoch_counter = 0
 best_model_state = None
 
 
+print("\n✅ Start Training ...")
+
 for epoch in range(NUM_EPOCHS):
     # Train
     cnn_model, loss_train, acc_train = train_one_epoch(
         cnn_model, aug_train_loader, loss_fn, optimizer, epoch
     )
     # Validation
-    loss_valid, acc_valid, _, _= evaluate_epoch_fn(cnn_model, test_loader, loss_fn)
+    loss_valid, acc_valid, _, _= evaluate_epoch_fn(cnn_model, test_loader, loss_fn, DEVICE)
 
     loss_train_hist.append(loss_train)
     loss_valid_hist.append(loss_valid)

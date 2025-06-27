@@ -4,7 +4,7 @@ from .average_meter import AverageMeter
 from .metrics import calculate_mrr_fn, top_k_accuracy_fn
 
 # --- Evaluation Function with tqdm, Top-k, and MRR ---
-def evaluate_epoch_fn(model_to_eval, data_loader, loss_criterion, current_device, description, k_for_top_k_eval=None):
+def evaluate_epoch_fn(model_to_eval, data_loader, loss_criterion, current_device, description="", k_for_top_k_eval=None):
     model_to_eval.eval()
     epoch_loss = AverageMeter()
     epoch_accuracy_top1 = AverageMeter()

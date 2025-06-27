@@ -19,6 +19,7 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
                 model_sgd, train_loader, loss_fn, optimizer, device, epoch=epoch
             )
             if accuracy < best_accuracy:
+                best_accuracy = accuracy
                 selected_optimizer = optim.SGD
                 selected_lr = lr
         del model_sgd
@@ -32,6 +33,7 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
                 model_adam, train_loader, loss_fn, optimizer, device, epoch=epoch
             )
             if accuracy < best_accuracy:
+                best_accuracy = accuracy
                 selected_optimizer = optim.Adam
                 selected_lr = lr
         print()
@@ -46,6 +48,7 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
                 model_adamw, train_loader, loss_fn, optimizer, device, epoch=epoch
             )
             if accuracy < best_accuracy:
+                best_accuracy = accuracy
                 selected_optimizer = optim.AdamW
                 selected_lr = lr
         del model_adamw
