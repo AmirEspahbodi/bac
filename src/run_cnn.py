@@ -16,17 +16,7 @@ from .utils import (
     validation_epoch_fn,
     select_best_optimizer_lr,
 )
-from src.vectorization import load_glove, get_word2vec_vectors, VectorizationsType
-
-
-class EmbeddingType(Enum):
-    GLOVE = "glove"
-    W2V = "w2v"
-    BERT = "bert"
-    ELMO = "elmo"
-
-    def __str__(self):
-        return self.value
+from src.vectorization import load_glove, get_word2vec_vectors, EmbeddingType
 
 
 def parse_arguments():
@@ -81,20 +71,21 @@ Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
 match selected_embedding:
     case EmbeddingType.GLOVE:
-        
         aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-            load_glove,
-            VectorizationsType.WORD_EMBEDDING
+            EmbeddingType.GLOVE
         )
     case EmbeddingType.W2V:
         aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-            get_word2vec_vectors,
-            VectorizationsType.WORD_EMBEDDING
+            EmbeddingType.W2V
         )
     case EmbeddingType.BERT:
-        print("BERT")
-    case EmbeddingType.ELMO:
-        print("ELMO")
+        aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
+            EmbeddingType.BERT
+        )
+    case EmbeddingType.ST:
+        aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
+            EmbeddingType.ST
+        )
 
 
 loss_fn = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING_FACTOR)
@@ -247,7 +238,7 @@ test_loss_final, test_acc_top1_final, test_mrr_final, _ = (
 
 print(f"\n--- Test Set Results (Best Validation Model) ---")
 print(f"\tTest Loss: {test_loss_final:.4f}")
-print(f"\tTest Accuracy (Top-1): {test_acc_top1_final * 100:.2f}%")
+print(f"\tTest Accuracy (Top-1): {test_acc_top1_final:.2f}%")
 print(f"\tTest MRR: {test_mrr_final:.4f}")
 
 
