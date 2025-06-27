@@ -12,6 +12,7 @@ from .utils import (
 )
 import copy
 import json
+from pathlib import Path
 
 # --- Model & Training Configuration ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -23,6 +24,11 @@ N_FILTERS_LIST = [512, 512, 512]
 FILTER_SIZES_LIST = [3, 4, 5]
 DROPOUT_RATE_VALUE = 0.5
 HIDDEN_DIM_FC_VALUE = 256
+
+model_save_path = f"{os.getcwd()}/.models/cnn_glove_model.pt"
+result_save_path=f"{os.getcwd()}/.result/cnn_glove_result.json"
+Path(model_save_path).mkdir(parents=True, exist_ok=True)
+Path(result_save_path).mkdir(parents=True, exist_ok=True)
 
 aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders()
 loss_fn = nn.CrossEntropyLoss()
@@ -37,13 +43,13 @@ cnn_model = CNNModel(
 ).to(DEVICE)
 
 
-selected_optimizer_class, selected_lr = select_best_optimizer_lr(
-    1,
-    cnn_model,
-    aug_train_loader,
-    loss_fn,
-    DEVICE
-)
+selected_optimizer_class, selected_lr = optim.AdamW, 0.001 #select_best_optimizer_lr(
+#     1,
+#     cnn_model,
+#     aug_train_loader,
+#     loss_fn,
+#     DEVICE
+# )
 
 print(selected_optimizer_class, selected_lr)
 
@@ -94,7 +100,7 @@ for epoch in range(NUM_EPOCHS):
 
 if best_model_state:
     cnn_model.load_state_dict(best_model_state)
-    torch.save(cnn_model, f"{os.getcwd()}/.models/cnn_glove_model.pt")
+    torch.save(cnn_model, )
     print("\n✅ Loaded best model based on validation accuracy for final testing.")
 else:
     print("\n⚠️ No improvement observed. Using model from the last epoch for testing.")
@@ -132,5 +138,5 @@ result = {
 print(result)
 
 # Save to JSON file
-with open(f"{os.getcwd()}/.result/cnn_glove_result.json", "w") as f:
+with open(result_save_path, "w") as f:
     json.dump(result, f, indent=4)
