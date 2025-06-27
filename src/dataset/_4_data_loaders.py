@@ -5,7 +5,7 @@ from transformers import BertTokenizer
 from typing import List, Tuple, Dict, Any
 
 
-def create_data_loaders(
+def create_data_loaders_word_embedding(
     train_dataset: pd.DataFrame,
     test_dataset: pd.DataFrame,
     validation_dataset: pd.DataFrame,

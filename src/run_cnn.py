@@ -16,7 +16,7 @@ from .utils import (
     validation_epoch_fn,
     select_best_optimizer_lr,
 )
-from src.vectorization import load_glove, get_word2vec_vectors
+from src.vectorization import load_glove, get_word2vec_vectors, VectorizationsType
 
 
 class EmbeddingType(Enum):
@@ -81,12 +81,15 @@ Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
 match selected_embedding:
     case EmbeddingType.GLOVE:
+        
         aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-            load_glove
+            load_glove,
+            VectorizationsType.WORD_EMBEDDING
         )
     case EmbeddingType.W2V:
         aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-            get_word2vec_vectors
+            get_word2vec_vectors,
+            VectorizationsType.WORD_EMBEDDING
         )
     case EmbeddingType.BERT:
         print("BERT")
