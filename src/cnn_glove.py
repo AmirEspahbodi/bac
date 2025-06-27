@@ -71,7 +71,7 @@ for epoch in range(NUM_EPOCHS):
         cnn_model, aug_train_loader, loss_fn, optimizer, epoch
     )
     # Validation
-    loss_valid, acc_valid, _, _= validation_epoch_fn(cnn_model, test_loader, loss_fn, DEVICE)
+    loss_valid, acc_valid, _, _= validation_epoch_fn(cnn_model, test_loader, loss_fn, DEVICE, description=f"epoch {epoch}: ")
 
     loss_train_hist.append(loss_train)
     loss_valid_hist.append(loss_valid)

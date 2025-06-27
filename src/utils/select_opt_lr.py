@@ -5,6 +5,7 @@ from .train_one_epoch import train_one_epoch
 
 def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
     best_accuracy = float("inf")
+    best_loss = float("+inf")
     selected_optimizer = None
     selected_lr = 1
 
@@ -18,7 +19,12 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
             model_sgd, loss_train, accuracy = train_one_epoch(
                 model_sgd, train_loader, loss_fn, optimizer, device, epoch=epoch
             )
-            if accuracy < best_accuracy:
+            if accuracy == best_accuracy:
+                if best_loss < loss_train:
+                    best_loss = loss_train
+                    selected_optimizer = optim.SGD
+                    selected_lr = lr
+            elif accuracy > best_accuracy:
                 best_accuracy = accuracy
                 selected_optimizer = optim.SGD
                 selected_lr = lr
@@ -32,7 +38,12 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
             model_adam, loss_train, accuracy = train_one_epoch(
                 model_adam, train_loader, loss_fn, optimizer, device, epoch=epoch
             )
-            if accuracy < best_accuracy:
+            if accuracy == best_accuracy:
+                if best_loss < loss_train:
+                    best_loss = loss_train
+                    selected_optimizer = optim.Adam
+                    selected_lr = lr
+            if accuracy > best_accuracy:
                 best_accuracy = accuracy
                 selected_optimizer = optim.Adam
                 selected_lr = lr
@@ -47,7 +58,12 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, device):
             model_adamw, loss_train, accuracy = train_one_epoch(
                 model_adamw, train_loader, loss_fn, optimizer, device, epoch=epoch
             )
-            if accuracy < best_accuracy:
+            if accuracy == best_accuracy:
+                if best_loss < loss_train:
+                    best_loss = loss_train
+                    selected_optimizer = optim.AdamW
+                    selected_lr = lr
+            if accuracy > best_accuracy:
                 best_accuracy = accuracy
                 selected_optimizer = optim.AdamW
                 selected_lr = lr
