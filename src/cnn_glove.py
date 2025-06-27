@@ -37,7 +37,7 @@ cnn_model = CNNModel(
 
 
 selected_optimizer_class, selected_lr = select_best_optimizer_lr(
-    3,
+    1,
     cnn_model,
     aug_train_loader,
     loss_fn,
