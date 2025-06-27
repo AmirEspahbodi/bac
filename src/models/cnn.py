@@ -60,13 +60,13 @@ class CNNModel(nn.Module):
         x_concatenated = torch.cat(conv_outputs, dim=1)
         x_dropped_out_conv = self.dropout_conv(x_concatenated)
 
-        # Fully Connected Layer 1 (Output size: 256)
+        # Fully Connected Layer 1
         x_fc1 = self.fc1(x_dropped_out_conv)
         x_bn_fc1 = self.bn_fc1(x_fc1)
         x_activated_fc1 = F.relu(x_bn_fc1)
         x_dropped_out_fc1 = self.dropout_fc1(x_activated_fc1)
 
-        # CHANGE: Forward pass through the new FC Layer 2 (Output size: 128)
+        # CHANGE: Forward pass through the new FC Layer 2
         x_fc2 = self.fc2(x_dropped_out_fc1)
         x_bn_fc2 = self.bn_fc2(x_fc2)
         x_activated_fc2 = F.relu(x_bn_fc2)

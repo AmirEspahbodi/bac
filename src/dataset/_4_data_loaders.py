@@ -215,7 +215,8 @@ def create_data_loaders_contectualized(
         shuffle=True,
         collate_fn=collator,
         num_workers=num_workers,
-        pin_memory=False
+        pin_memory=False,
+        drop_last=True
     )
     val_loader = DataLoader(
         dataset=val_torch_dataset,
