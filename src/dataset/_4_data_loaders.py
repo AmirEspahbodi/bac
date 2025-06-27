@@ -48,7 +48,7 @@ def create_data_loaders(
             """
             return self.texts[idx], self.labels[idx]
 
-    def collate_fn_glove(batch: List[Tuple[List[str], int]]) -> Tuple[torch.Tensor, torch.Tensor]:
+    def collate_fn_glove_w2v(batch: List[Tuple[List[str], int]]) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         A custom collate function to process a batch of data for GloVe embeddings.
 
@@ -90,19 +90,19 @@ def create_data_loaders(
         train_data,
         batch_size=batch_size,
         shuffle=True,
-        collate_fn=collate_fn_glove
+        collate_fn=collate_fn_glove_w2v
     )
     test_loader = DataLoader(
         test_data,
         batch_size=batch_size,
         shuffle=False,
-        collate_fn=collate_fn_glove
+        collate_fn=collate_fn_glove_w2v
     )
     validation_loader = DataLoader(
         validation_data,
         batch_size=batch_size,
         shuffle=False,
-        collate_fn=collate_fn_glove
+        collate_fn=collate_fn_glove_w2v
     )
 
     return train_loader, test_loader, validation_loader

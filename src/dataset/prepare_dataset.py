@@ -8,7 +8,7 @@ from src.vectorization import load_glove
 from src.tokenization import get_bert_tokenizer
 
 
-def get_data_loaders():
+def get_data_loaders(vectiriation_function):
     dataset, NUM_ACTUAL_CLS = load_dataset(
         DatasetType.GCC, dataset_rpath="./datasets/gcc_data.csv"
     )
@@ -20,6 +20,6 @@ def get_data_loaders():
         test_dataset,
         validation_dataset,
         bert_tokenizer,
-        vectorization_function=load_glove,
+        vectorization_function=vectiriation_function,
     )
     return aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS
