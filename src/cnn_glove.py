@@ -39,7 +39,7 @@ result_save_path=f"{os.getcwd()}/.result/cnn_glove_result.json"
 Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
 Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
-aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(get_word2vec_vectors)
+aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(load_glove)
 loss_fn = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING_FACTOR)
 
 
