@@ -146,7 +146,7 @@ class ModernEmbeddingCollator:
     def __init__(self,
                  bert_tokenizer: BertTokenizer,
                  embedding_type: EmbeddingType,
-                 bert_model_name: str = 'bert-base-uncased',
+                 bert_model_name: str = 'bert-large-uncased',
                  st_model_name: str = 'all-MiniLM-L6-v2',
                  device: str = 'cpu'):
         self.device = torch.device(device)
@@ -215,7 +215,7 @@ def create_data_loaders_contectualized(
         shuffle=True,
         collate_fn=collator,
         num_workers=num_workers,
-        pin_memory=True if device == 'cuda' else False
+        pin_memory=False
     )
     val_loader = DataLoader(
         dataset=val_torch_dataset,
@@ -223,7 +223,7 @@ def create_data_loaders_contectualized(
         shuffle=False,
         collate_fn=collator,
         num_workers=num_workers,
-        pin_memory=True if device == 'cuda' else False
+        pin_memory=False
     )
     test_loader = DataLoader(
         dataset=test_torch_dataset,
@@ -231,7 +231,7 @@ def create_data_loaders_contectualized(
         shuffle=False,
         collate_fn=collator,
         num_workers=num_workers,
-        pin_memory=True if device == 'cuda' else False
+        pin_memory=False
     )
 
     return train_loader, val_loader, test_loader
