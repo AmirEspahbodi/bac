@@ -113,7 +113,7 @@ for epoch in range(NUM_EPOCHS):
         best_val_loss = current_val_loss
         epochs_no_improve = 0
         best_model_state = copy.deepcopy(cnn_model.state_dict())
-        print(f"\t✨ New best validation loss: {best_val_loss:.4f}. Model state saved to {model_save_path}")
+        print(f"\t✨ New best validation loss: {best_val_loss:.4f}")
     else:
         epochs_no_improve += 1
         print(f"\tValidation loss did not improve. Patience: {epochs_no_improve}/{PATIENCE}")
@@ -130,7 +130,7 @@ for epoch in range(NUM_EPOCHS):
 
 if best_model_state:
     cnn_model.load_state_dict(best_model_state)
-    with open(model_save_path, "wb") as fp:
+    with open(model_save_path, "w") as fp:
         torch.save(cnn_model, fp)
     print("\n✅ Loaded best model based on validation accuracy for final testing.")
 else:
