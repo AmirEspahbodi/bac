@@ -64,20 +64,20 @@ match selected_embedding:
         BATCH_SIZE = 32
         LEARNING_RATE = 5e-5
         WEIGHT_DECAY = 0.01
-        NUM_EPOCHS = 4
+        NUM_EPOCHS = 15
         EMBEDDING_DIM_VALUE = 768
-        N_FILTERS_LIST = [128, 128, 128]
+        N_FILTERS_LIST = [512, 512, 512]
         FILTER_SIZES_LIST = [3, 4, 5]
         DROPOUT_RATE_VALUE = 0.5
         HIDDEN_DIM_FC1_VALUE = 512
-        HIDDEN_DIM_FC2_VALUE = 128
+        HIDDEN_DIM_FC2_VALUE = 256
         LABEL_SMOOTHING_FACTOR = 0.1
         GRADIENT_CLIP_VALUE = 1.0
     case EmbeddingType.ST:
         BATCH_SIZE = 32
         LEARNING_RATE = 5e-5
         WEIGHT_DECAY = 0.01
-        NUM_EPOCHS = 4
+        NUM_EPOCHS = 10
         EMBEDDING_DIM_VALUE = 384
         N_FILTERS_LIST = [128, 128, 128]
         FILTER_SIZES_LIST = [3, 4, 5]
@@ -97,23 +97,9 @@ result_save_path = f"{os.getcwd()}/.result/cnn_glove_result.json"
 Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
 Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
-match selected_embedding:
-    case EmbeddingType.GLOVE:
-        aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-            EmbeddingType.GLOVE
-        )
-    case EmbeddingType.W2V:
-        aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-            EmbeddingType.W2V
-        )
-    case EmbeddingType.BERT:
-        aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-            EmbeddingType.BERT
-        )
-    case EmbeddingType.ST:
-        aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-            EmbeddingType.ST
-        )
+aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
+    selected_embedding
+)
 
 
 loss_fn = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING_FACTOR)
