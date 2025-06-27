@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -93,7 +94,7 @@ for epoch in range(NUM_EPOCHS):
 
 if best_model_state:
     cnn_model.load_state_dict(best_model_state)
-    torch.save(cnn_model, f"./.models/cnn_glove_model.pt")
+    torch.save(cnn_model, f"{os.getcwd()}/.models/cnn_glove_model.pt")
     print("\n✅ Loaded best model based on validation accuracy for final testing.")
 else:
     print("\n⚠️ No improvement observed. Using model from the last epoch for testing.")
