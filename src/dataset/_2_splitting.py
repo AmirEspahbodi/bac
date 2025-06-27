@@ -39,7 +39,6 @@ def slit_dataset(dataset: pd.DataFrame):
                 "Stratification for a subsequent train/val split from val_train_dataset appears feasible."
             )
 
-    print((val_train_dataset["assignee_encoded"].value_counts().min()))
     train_dataset, validation_dataset = train_test_split(
         val_train_dataset,
         test_size=0.125,
