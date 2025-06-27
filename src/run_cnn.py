@@ -148,7 +148,7 @@ for epoch in range(NUM_EPOCHS):
     )
 
     # --- Update history ---
-    loss_train_hist = [].append(loss_train)
+    loss_train_hist.append(loss_train)
     loss_valid_hist.append(current_val_loss)
     acc_train_hist.append(acc_train)
     acc_valid_hist.append(current_val_acc)
@@ -189,7 +189,9 @@ plot_training_history(NUM_EPOCHS, loss_train_hist, loss_valid_hist, acc_train_hi
 
 
 print("\n🧪 Evaluating on Test Set...")
-test_loss_final, test_acc_top1_final, test_mrr_final, _ = validation_epoch_fn(cnn_model, test_loader, optimizer, DEVICE, "Testing")
+test_loss_final, test_acc_top1_final, test_mrr_final, _ = test_loss_final, test_acc_top1_final, test_mrr_final, _ = validation_epoch_fn(
+        cnn_model, test_loader, loss_fn, DEVICE, description=f"Validation {epoch + 1}"
+    )
 
 print(f"\n--- Test Set Results (Best Validation Model) ---")
 print(f"\tTest Loss: {test_loss_final:.4f}")
