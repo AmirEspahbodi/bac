@@ -25,7 +25,8 @@ EMBEDDING_DIM_VALUE = 300
 N_FILTERS_LIST = [128, 128, 128]
 FILTER_SIZES_LIST = [3, 4, 5]
 DROPOUT_RATE_VALUE = 0.5
-HIDDEN_DIM_FC_VALUE = 64
+HIDDEN_DIM_FC1_VALUE = 128
+HIDDEN_DIM_FC2_VALUE = 64
 LABEL_SMOOTHING_FACTOR = 0.1
 GRADIENT_CLIP_VALUE = 1.0
 
@@ -39,7 +40,7 @@ result_save_path=f"{os.getcwd()}/.result/cnn_glove_result.json"
 Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
 Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
-aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(load_glove)
+aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(get_word2vec_vectors)
 loss_fn = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING_FACTOR)
 
 
@@ -49,7 +50,8 @@ cnn_model = CNNModel(
     num_filters_per_size=N_FILTERS_LIST,
     num_classes=NUM_ACTUAL_CLS,
     dropout_rate=DROPOUT_RATE_VALUE,
-    hidden_dim_fc=HIDDEN_DIM_FC_VALUE,
+    hidden_dim_fc1=HIDDEN_DIM_FC1_VALUE,
+    hidden_dim_fc2=HIDDEN_DIM_FC2_VALUE,
 ).to(DEVICE)
 
 

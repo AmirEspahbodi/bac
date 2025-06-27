@@ -12,7 +12,8 @@ class CNNModel(nn.Module):
         num_filters_per_size: List[int],
         num_classes: int,
         dropout_rate: float,
-        hidden_dim_fc: int
+        hidden_dim_fc1: int,
+        hidden_dim_fc2: int
     ):
         super(CNNModel, self).__init__()
 
@@ -28,11 +29,11 @@ class CNNModel(nn.Module):
 
         self.dropout_conv = nn.Dropout(p=dropout_rate)
         
-        self.fc1 = nn.Linear(total_filters, hidden_dim_fc)
-        self.bn_fc1 = nn.BatchNorm1d(num_features=hidden_dim_fc)
+        self.fc1 = nn.Linear(total_filters, hidden_dim_fc1)
+        self.bn_fc1 = nn.BatchNorm1d(num_features=hidden_dim_fc1)
         self.dropout_fc1 = nn.Dropout(p=dropout_rate)
         
-        self.fc2 = nn.Linear(hidden_dim_fc, num_classes)
+        self.fc2 = nn.Linear(hidden_dim_fc2, num_classes)
 
 
     def forward(self, x_ids: torch.Tensor) -> torch.Tensor:
