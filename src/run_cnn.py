@@ -54,8 +54,8 @@ match selected_embedding:
         WEIGHT_DECAY = 0.01  # for adamw
         NUM_EPOCHS = 7
         EMBEDDING_DIM_VALUE = 300
-        N_FILTERS_LIST = [128, 128, 128]
-        FILTER_SIZES_LIST = [3, 4, 5]
+        N_FILTERS_LIST = [128, 128, 128, 128]
+        FILTER_SIZES_LIST = [2, 3, 4, 5]
         DROPOUT_RATE_VALUE = 0.5
         HIDDEN_DIM_FC1_VALUE = 256
         HIDDEN_DIM_FC2_VALUE = 128
