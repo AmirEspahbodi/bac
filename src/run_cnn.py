@@ -52,7 +52,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 match selected_embedding:
     case EmbeddingType.GLOVE:
         print("using  GLOVE embeddings")
-        NUM_EPOCHS = 10
+        NUM_EPOCHS = 7
         EMBEDDING_DIM_VALUE = 300
         N_FILTERS_LIST = [512, 512, 512]
         FILTER_SIZES_LIST = [3, 4, 5]
