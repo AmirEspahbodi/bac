@@ -47,7 +47,6 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, GRADIENT_
                 best_accuracy = accuracy
                 selected_optimizer = optim.Adam
                 selected_lr = lr
-        print()
         del model_adam
 
     for lr in [0.1, 0.01, 0.001, 0.0001]:

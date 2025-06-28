@@ -102,7 +102,7 @@ class CNNModelGLOVE(nn.Module):
         self.fc2 = nn.Linear(hidden_dim_fc, num_classes)
 
     def forward(self, x):
-        x = x.permute(1, 2, 0)
+        x = x.permute(0, 2, 1)
 
         conv_outputs = []
         for conv_layer in self.conv1d_list:
