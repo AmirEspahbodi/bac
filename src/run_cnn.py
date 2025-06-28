@@ -67,6 +67,7 @@ match selected_embedding:
             hidden_dim_fc=HIDDEN_DIM_FC_VALUE
         ).to(DEVICE)
 
+        
     case EmbeddingType.BERT:
         print("using bert embeddings")
         BATCH_SIZE = 32
@@ -79,8 +80,6 @@ match selected_embedding:
         DROPOUT_RATE_VALUE = 0.5
         HIDDEN_DIM_FC1_VALUE = 256
         HIDDEN_DIM_FC2_VALUE = 128
-        LABEL_SMOOTHING_FACTOR = 0.1
-        GRADIENT_CLIP_VALUE = 1.0
         cnn_model = CNNModelBERT(
             embed_dim=EMBEDDING_DIM_VALUE,
             filter_sizes=FILTER_SIZES_LIST,
@@ -90,7 +89,9 @@ match selected_embedding:
             hidden_dim_fc1=HIDDEN_DIM_FC1_VALUE,
             hidden_dim_fc2=HIDDEN_DIM_FC2_VALUE,
         ).to(DEVICE)
-
+LABEL_SMOOTHING_FACTOR = 0.1
+GRADIENT_CLIP_VALUE = 1.0
+        
 
 # --- Early Stopping Configuration ---
 PATIENCE = 5
