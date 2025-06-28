@@ -115,6 +115,7 @@ selected_optimizer_class, selected_lr = select_best_optimizer_lr(
     cnn_model,
     aug_train_loader,
     loss_fn,
+    GRADIENT_CLIP_VALUE,
     DEVICE
 )
 
