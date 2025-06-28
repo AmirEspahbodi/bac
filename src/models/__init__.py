@@ -1,1 +1,1 @@
-from .cnn import CNNModelGlove
+from .cnn import CNNModelGLOVE, CNNModelBERT

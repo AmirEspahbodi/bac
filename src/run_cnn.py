@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from .dataset import get_data_loaders
-from .models import CNNModelGlove
+from .models import CNNModelGLOVE, CNNModelBERT
 from .utils import (
     train_one_epoch,
     validation_epoch_fn,
@@ -43,6 +43,9 @@ except argparse.ArgumentError as e:
     print(f"Error: {e}", file=sys.stderr)
     sys.exit(1)
 
+aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
+    selected_embedding
+)
 
 # --- Model & Training Configuration ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -61,22 +64,32 @@ match selected_embedding:
         HIDDEN_DIM_FC2_VALUE = 128
         LABEL_SMOOTHING_FACTOR = 0.1
         GRADIENT_CLIP_VALUE = 1.0
-        CNNModel = CNNModelGlove
+        cnn_model = CNNModelGLOVE(
+            embed_dim=EMBEDDING_DIM_VALUE,
+            filter_sizes=FILTER_SIZES_LIST,
+            num_filters_per_size=N_FILTERS_LIST,
+            num_classes=NUM_ACTUAL_CLS,
+            dropout_rate=DROPOUT_RATE_VALUE,
+            hidden_dim_fc1=HIDDEN_DIM_FC1_VALUE,
+            hidden_dim_fc2=HIDDEN_DIM_FC2_VALUE,
+        ).to(DEVICE)
     case EmbeddingType.BERT:
         print("using bert embeddings")
-        BATCH_SIZE = 32
-        LEARNING_RATE = 5e-5
-        WEIGHT_DECAY = 0.01
-        NUM_EPOCHS = 6
-        EMBEDDING_DIM_VALUE = 768
-        N_FILTERS_LIST = [256, 256, 256, 256]
-        FILTER_SIZES_LIST = [2, 3, 4, 5]
+        EMBEDDING_DIM_VALUE = 300
+        N_FILTERS_LIST = [512, 512, 512]
+        FILTER_SIZES_LIST = [3, 4, 5]
+        OUTPUT_DIM_VALUE = NUM_ACTUAL_CLS
         DROPOUT_RATE_VALUE = 0.5
-        HIDDEN_DIM_FC1_VALUE = 768
-        HIDDEN_DIM_FC2_VALUE = 256
-        LABEL_SMOOTHING_FACTOR = 0.1
-        GRADIENT_CLIP_VALUE = 1.0
-        CNNModel = CNNModelGlove
+        HIDDEN_DIM_FC_VALUE = 256
+
+        model = CNNModelGLOVE(
+            embed_dim=EMBEDDING_DIM_VALUE,
+            filter_sizes=FILTER_SIZES_LIST,
+            num_filters_per_size=N_FILTERS_LIST,
+            num_classes=OUTPUT_DIM_VALUE,
+            dropout_rate=DROPOUT_RATE_VALUE,
+            hidden_dim_fc=HIDDEN_DIM_FC_VALUE
+        ).to(DEVICE)
 
 # --- Early Stopping Configuration ---
 PATIENCE = 5
@@ -88,23 +101,10 @@ result_save_path = f"{os.getcwd()}/.result/cnn_glove_result.json"
 Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
 Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
-aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-    selected_embedding
-)
+
 
 
 loss_fn = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING_FACTOR)
-
-
-cnn_model = CNNModel(
-    embed_dim=EMBEDDING_DIM_VALUE,
-    filter_sizes=FILTER_SIZES_LIST,
-    num_filters_per_size=N_FILTERS_LIST,
-    num_classes=NUM_ACTUAL_CLS,
-    dropout_rate=DROPOUT_RATE_VALUE,
-    hidden_dim_fc1=HIDDEN_DIM_FC1_VALUE,
-    hidden_dim_fc2=HIDDEN_DIM_FC2_VALUE,
-).to(DEVICE)
 
 
 selected_optimizer_class, selected_lr = optim.AdamW, 0.001  # select_best_optimizer_lr(
