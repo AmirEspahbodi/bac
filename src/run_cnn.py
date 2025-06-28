@@ -58,7 +58,7 @@ match selected_embedding:
         OUTPUT_DIM_VALUE = NUM_ACTUAL_CLS
         DROPOUT_RATE_VALUE = 0.5
         HIDDEN_DIM_FC_VALUE = 256
-        model = CNNModelGLOVE(
+        cnn_model = CNNModelGLOVE(
             embed_dim=EMBEDDING_DIM_VALUE,
             filter_sizes=FILTER_SIZES_LIST,
             num_filters_per_size=N_FILTERS_LIST,
