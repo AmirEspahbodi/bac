@@ -68,7 +68,11 @@ match selected_embedding:
             hidden_dim_fc=HIDDEN_DIM_FC_VALUE
         ).to(DEVICE)
         BATCH_SIZE = 32
-        
+        model_save_path = f"{os.getcwd()}/.models/cnn_glove_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/cnn_glove_result.json"
+        Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
+        Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
+
     case EmbeddingType.BERT:
         print("using bert embeddings")
         NUM_EPOCHS = 7
@@ -88,7 +92,10 @@ match selected_embedding:
             hidden_dim_fc2=HIDDEN_DIM_FC2_VALUE,
         ).to(DEVICE)
         BATCH_SIZE = 32
-
+        model_save_path = f"{os.getcwd()}/.models/cnn_bert_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/cnn_bert_result.json"
+        Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
+        Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
 LABEL_SMOOTHING_FACTOR = 0.1
 GRADIENT_CLIP_VALUE = 1.0
@@ -97,13 +104,6 @@ GRADIENT_CLIP_VALUE = 1.0
 # --- Early Stopping Configuration ---
 PATIENCE = 5
 MIN_DELTA = 0.0001
-
-
-model_save_path = f"{os.getcwd()}/.models/cnn_glove_model.pt"
-result_save_path = f"{os.getcwd()}/.result/cnn_glove_result.json"
-Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
-Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
-
 
 
 
