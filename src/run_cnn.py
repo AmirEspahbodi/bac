@@ -51,7 +51,24 @@ aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 match selected_embedding:
     case EmbeddingType.GLOVE:
-        print("using W2V & GLOVE embeddings")
+        print("using  GLOVE embeddings")
+        EMBEDDING_DIM_VALUE = 300
+        N_FILTERS_LIST = [512, 512, 512]
+        FILTER_SIZES_LIST = [3, 4, 5]
+        OUTPUT_DIM_VALUE = NUM_ACTUAL_CLS
+        DROPOUT_RATE_VALUE = 0.5
+        HIDDEN_DIM_FC_VALUE = 256
+        model = CNNModelGLOVE(
+            embed_dim=EMBEDDING_DIM_VALUE,
+            filter_sizes=FILTER_SIZES_LIST,
+            num_filters_per_size=N_FILTERS_LIST,
+            num_classes=OUTPUT_DIM_VALUE,
+            dropout_rate=DROPOUT_RATE_VALUE,
+            hidden_dim_fc=HIDDEN_DIM_FC_VALUE
+        ).to(DEVICE)
+
+    case EmbeddingType.BERT:
+        print("using bert embeddings")
         BATCH_SIZE = 32
         LEARNING_RATE = 1e-4
         WEIGHT_DECAY = 0.01  # for adamw
@@ -64,7 +81,7 @@ match selected_embedding:
         HIDDEN_DIM_FC2_VALUE = 128
         LABEL_SMOOTHING_FACTOR = 0.1
         GRADIENT_CLIP_VALUE = 1.0
-        cnn_model = CNNModelGLOVE(
+        cnn_model = CNNModelBERT(
             embed_dim=EMBEDDING_DIM_VALUE,
             filter_sizes=FILTER_SIZES_LIST,
             num_filters_per_size=N_FILTERS_LIST,
@@ -73,23 +90,7 @@ match selected_embedding:
             hidden_dim_fc1=HIDDEN_DIM_FC1_VALUE,
             hidden_dim_fc2=HIDDEN_DIM_FC2_VALUE,
         ).to(DEVICE)
-    case EmbeddingType.BERT:
-        print("using bert embeddings")
-        EMBEDDING_DIM_VALUE = 300
-        N_FILTERS_LIST = [512, 512, 512]
-        FILTER_SIZES_LIST = [3, 4, 5]
-        OUTPUT_DIM_VALUE = NUM_ACTUAL_CLS
-        DROPOUT_RATE_VALUE = 0.5
-        HIDDEN_DIM_FC_VALUE = 256
 
-        model = CNNModelGLOVE(
-            embed_dim=EMBEDDING_DIM_VALUE,
-            filter_sizes=FILTER_SIZES_LIST,
-            num_filters_per_size=N_FILTERS_LIST,
-            num_classes=OUTPUT_DIM_VALUE,
-            dropout_rate=DROPOUT_RATE_VALUE,
-            hidden_dim_fc=HIDDEN_DIM_FC_VALUE
-        ).to(DEVICE)
 
 # --- Early Stopping Configuration ---
 PATIENCE = 5
