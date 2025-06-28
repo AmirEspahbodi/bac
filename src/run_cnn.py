@@ -50,7 +50,7 @@ aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
 # --- Model & Training Configuration ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 match selected_embedding:
-    case EmbeddingType.GLOVE:
+    case EmbeddingType.GLOVE|EmbeddingType.BERT:
         print("using  GLOVE embeddings")
         NUM_EPOCHS = 7
         EMBEDDING_DIM_VALUE = 300
@@ -73,7 +73,7 @@ match selected_embedding:
         Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
         Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
-    case EmbeddingType.BERT:
+    case _:
         print("using bert embeddings")
         NUM_EPOCHS = 7
         EMBEDDING_DIM_VALUE = 768
