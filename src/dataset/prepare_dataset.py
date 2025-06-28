@@ -28,9 +28,9 @@ def get_data_loaders(embedding_type:EmbeddingType):
             )
         case EmbeddingType.BERT:
             aug_train_loader, val_loader, test_loader = get_data_loaders_bert(
-                train_df=aug_train_dataset,
-                validation_df=test_dataset,
-                test_df=validation_dataset,
-                bert_tokenizer=bert_tokenizer,
+                aug_train_dataset,
+                test_dataset,
+                validation_dataset,
+                bert_tokenizer,
             )
     return aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS
