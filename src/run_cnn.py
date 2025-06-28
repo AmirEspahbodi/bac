@@ -54,11 +54,11 @@ match selected_embedding:
         print("using  GLOVE embeddings")
         NUM_EPOCHS = 7
         EMBEDDING_DIM_VALUE = 300
-        N_FILTERS_LIST = [512, 512, 512]
+        N_FILTERS_LIST = [256, 256, 256]
         FILTER_SIZES_LIST = [3, 4, 5]
         OUTPUT_DIM_VALUE = NUM_ACTUAL_CLS
         DROPOUT_RATE_VALUE = 0.5
-        HIDDEN_DIM_FC_VALUE = 256
+        HIDDEN_DIM_FC_VALUE = 128
         cnn_model = CNNModelGLOVE(
             embed_dim=EMBEDDING_DIM_VALUE,
             filter_sizes=FILTER_SIZES_LIST,
@@ -94,11 +94,11 @@ match selected_embedding:
         # BATCH_SIZE = 32
         NUM_EPOCHS = 7
         EMBEDDING_DIM_VALUE = 768
-        N_FILTERS_LIST = [512, 512, 512]
+        N_FILTERS_LIST = [256, 256, 256]
         FILTER_SIZES_LIST = [3, 4, 5]
         OUTPUT_DIM_VALUE = NUM_ACTUAL_CLS
         DROPOUT_RATE_VALUE = 0.5
-        HIDDEN_DIM_FC_VALUE = 256
+        HIDDEN_DIM_FC_VALUE = 128
         cnn_model = CNNModelGLOVE(
             embed_dim=EMBEDDING_DIM_VALUE,
             filter_sizes=FILTER_SIZES_LIST,
