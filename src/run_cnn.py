@@ -145,8 +145,7 @@ early_stop_triggered = False
 best_model_state = None
 
 
-print("\n✅ Start Training ...")
-
+print(f"\n✅ Start Training {NUM_EPOCHS} epochs ...")
 for epoch in range(NUM_EPOCHS):
     print(
         f"Epoch {epoch + 1}/{NUM_EPOCHS} | Current LR: {optimizer.param_groups[0]['lr']:.6f}"
