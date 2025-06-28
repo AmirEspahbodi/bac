@@ -93,7 +93,7 @@ match selected_embedding:
         # ).to(DEVICE)
         # BATCH_SIZE = 32
         NUM_EPOCHS = 7
-        EMBEDDING_DIM_VALUE = 300
+        EMBEDDING_DIM_VALUE = 768
         N_FILTERS_LIST = [512, 512, 512]
         FILTER_SIZES_LIST = [3, 4, 5]
         OUTPUT_DIM_VALUE = NUM_ACTUAL_CLS
