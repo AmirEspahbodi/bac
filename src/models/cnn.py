@@ -101,6 +101,7 @@ class CNNModelGLOVE(nn.Module):
         self.bn_fc1 = nn.BatchNorm1d(num_features=hidden_dim_fc)
         self.dropout = nn.Dropout(p=dropout_rate)
         self.fc2 = nn.Linear(hidden_dim_fc, num_classes)
+        self.bn_fc2 = nn.BatchNorm1d(num_features=num_classes)
 
     def forward(self, x):
         x = x.permute(0, 2, 1)
@@ -121,8 +122,6 @@ class CNNModelGLOVE(nn.Module):
         x_dropped_out2 = self.dropout(x_bn_fc1)
         
         x_fc2 = self.fc2(x_dropped_out2)
-        x_activated_fc2 = F.relu(x_fc2)
-        x_bn_fc2 = self.bn_fc1(x_activated_fc2)
-        logits = self.dropout(x_bn_fc2)
+        logits = self.dropout(x_fc2)
         
         return logits
