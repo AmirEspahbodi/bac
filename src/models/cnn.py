@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from typing import List
 
 
-class CNNModel(nn.Module):
+class CNNModelGlove(nn.Module):
     def __init__(
         self,
         embed_dim: int,
@@ -15,7 +15,7 @@ class CNNModel(nn.Module):
         hidden_dim_fc1: int,
         hidden_dim_fc2: int,
     ):
-        super(CNNModel, self).__init__()
+        super(CNNModelGlove, self).__init__()
 
         self.conv_blocks = nn.ModuleList()
         for f_size, n_filters in zip(filter_sizes, num_filters_per_size):

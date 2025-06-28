@@ -1,3 +1,3 @@
-from .glove import load_glove
-from .w2v import get_word2vec_vectors
+from .bert_data_loader import get_data_loaders_bert
+from .glove_data_loader import data_loaders_with_glove
 from .embedding_type import EmbeddingType

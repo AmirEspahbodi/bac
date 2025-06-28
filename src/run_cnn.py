@@ -10,13 +10,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from .dataset import get_data_loaders
-from .models import CNNModel
+from .models import CNNModelGlove
 from .utils import (
     train_one_epoch,
     validation_epoch_fn,
     select_best_optimizer_lr,
 )
-from src.vectorization import load_glove, get_word2vec_vectors, EmbeddingType
+from src.vectorization import EmbeddingType
 
 
 def parse_arguments():
@@ -47,7 +47,7 @@ except argparse.ArgumentError as e:
 # --- Model & Training Configuration ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 match selected_embedding:
-    case EmbeddingType.W2V | EmbeddingType.GLOVE:
+    case EmbeddingType.GLOVE:
         print("using W2V & GLOVE embeddings")
         BATCH_SIZE = 32
         LEARNING_RATE = 1e-4
@@ -61,6 +61,7 @@ match selected_embedding:
         HIDDEN_DIM_FC2_VALUE = 128
         LABEL_SMOOTHING_FACTOR = 0.1
         GRADIENT_CLIP_VALUE = 1.0
+        CNNModel = CNNModelGlove
     case EmbeddingType.BERT:
         print("using bert embeddings")
         BATCH_SIZE = 32
@@ -68,30 +69,17 @@ match selected_embedding:
         WEIGHT_DECAY = 0.01
         NUM_EPOCHS = 10
         EMBEDDING_DIM_VALUE = 768
-        N_FILTERS_LIST = [512, 512, 512]
-        FILTER_SIZES_LIST = [3, 4, 5]
+        N_FILTERS_LIST = [256, 256, 256, 256]
+        FILTER_SIZES_LIST = [2, 3, 4, 5]
         DROPOUT_RATE_VALUE = 0.5
         HIDDEN_DIM_FC1_VALUE = 512
         HIDDEN_DIM_FC2_VALUE = 256
         LABEL_SMOOTHING_FACTOR = 0.1
         GRADIENT_CLIP_VALUE = 1.0
-    case EmbeddingType.ST:
-        print("using st embeddings")
-        BATCH_SIZE = 32
-        LEARNING_RATE = 5e-5
-        WEIGHT_DECAY = 0.01
-        NUM_EPOCHS = 10
-        EMBEDDING_DIM_VALUE = 384
-        N_FILTERS_LIST = [128, 128, 128]
-        FILTER_SIZES_LIST = [3, 4, 5]
-        DROPOUT_RATE_VALUE = 0.5
-        HIDDEN_DIM_FC1_VALUE = 256
-        HIDDEN_DIM_FC2_VALUE = 128
-        LABEL_SMOOTHING_FACTOR = 0.1
-        GRADIENT_CLIP_VALUE = 1.0
+        CNNModel = CNNModelGlove
 
 # --- Early Stopping Configuration ---
-PATIENCE = 3
+PATIENCE = 5
 MIN_DELTA = 0.0001
 
 

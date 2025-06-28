@@ -1,1 +1,1 @@
-from .cnn import CNNModel
+from .cnn import CNNModelGlove

@@ -2,9 +2,9 @@ from ._1_load_dataset import load_dataset
 from ._2_splitting import slit_dataset
 from ._3_data_augmentation import contextual_data_augmentation
 from ._3_2_data_augmentation import contextual_word_replacement_augmentation
-from ._4_data_loaders import create_data_loaders_word_embedding, create_data_loaders_contectualized
+from src.vectorization import data_loaders_with_glove, get_data_loaders_bert
 from ._dataset_types import DatasetType
-from src.vectorization import EmbeddingType, load_glove, get_word2vec_vectors
+from src.vectorization import EmbeddingType
 from src.tokenization import get_bert_tokenizer
 
 
@@ -20,37 +20,17 @@ def get_data_loaders(embedding_type:EmbeddingType):
     
     match embedding_type:
         case EmbeddingType.GLOVE:
-            aug_train_loader, val_loader, test_loader = create_data_loaders_word_embedding(
+            aug_train_loader, val_loader, test_loader = data_loaders_with_glove(
                 aug_train_dataset,
                 test_dataset,
                 validation_dataset,
                 bert_tokenizer,
-                vectorization_function=load_glove,
-            )
-        case EmbeddingType.W2V:
-            aug_train_loader, val_loader, test_loader = create_data_loaders_word_embedding(
-                aug_train_dataset,
-                test_dataset,
-                validation_dataset,
-                bert_tokenizer,
-                vectorization_function=get_word2vec_vectors,
             )
         case EmbeddingType.BERT:
-            aug_train_loader, val_loader, test_loader = create_data_loaders_contectualized(
+            aug_train_loader, val_loader, test_loader = get_data_loaders_bert(
                 train_df=aug_train_dataset,
                 validation_df=test_dataset,
                 test_df=validation_dataset,
                 bert_tokenizer=bert_tokenizer,
-                batch_size=2, # Small batch size for demonstration
-                embedding_type=EmbeddingType.BERT
-            )
-        case EmbeddingType.ST:
-            aug_train_loader, val_loader, test_loader = create_data_loaders_contectualized(
-                train_df=aug_train_dataset,
-                validation_df=test_dataset,
-                test_df=validation_dataset,
-                bert_tokenizer=bert_tokenizer,
-                batch_size=2, # Small batch size for demonstration
-                embedding_type=EmbeddingType.ST
             )
     return aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS
