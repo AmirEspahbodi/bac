@@ -67,12 +67,12 @@ match selected_embedding:
         BATCH_SIZE = 32
         LEARNING_RATE = 5e-5
         WEIGHT_DECAY = 0.01
-        NUM_EPOCHS = 10
+        NUM_EPOCHS = 6
         EMBEDDING_DIM_VALUE = 768
-        N_FILTERS_LIST = [256, 256, 256, 256]
+        N_FILTERS_LIST = [128, 128, 128, 128]
         FILTER_SIZES_LIST = [2, 3, 4, 5]
         DROPOUT_RATE_VALUE = 0.5
-        HIDDEN_DIM_FC1_VALUE = 512
+        HIDDEN_DIM_FC1_VALUE = 768
         HIDDEN_DIM_FC2_VALUE = 256
         LABEL_SMOOTHING_FACTOR = 0.1
         GRADIENT_CLIP_VALUE = 1.0
