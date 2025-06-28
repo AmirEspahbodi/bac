@@ -122,6 +122,5 @@ class CNNModelGLOVE(nn.Module):
         x_dropped_out2 = self.dropout(x_bn_fc1)
         
         x_fc2 = self.fc2(x_dropped_out2)
-        logits = self.dropout(x_fc2)
         
-        return logits
+        return x_fc2
