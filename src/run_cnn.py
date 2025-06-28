@@ -67,7 +67,7 @@ match selected_embedding:
             dropout_rate=DROPOUT_RATE_VALUE,
             hidden_dim_fc=HIDDEN_DIM_FC_VALUE
         ).to(DEVICE)
-
+        BATCH_SIZE = 32
         
     case EmbeddingType.BERT:
         print("using bert embeddings")
@@ -87,9 +87,9 @@ match selected_embedding:
             hidden_dim_fc1=HIDDEN_DIM_FC1_VALUE,
             hidden_dim_fc2=HIDDEN_DIM_FC2_VALUE,
         ).to(DEVICE)
+        BATCH_SIZE = 32
 
-BATCH_SIZE = 32
-WEIGHT_DECAY = 1e-4
+
 LABEL_SMOOTHING_FACTOR = 0.1
 GRADIENT_CLIP_VALUE = 1.0
 
@@ -110,21 +110,28 @@ Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 loss_fn = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING_FACTOR)
 
 
-selected_optimizer_class, selected_lr = optim.AdamW, 0.001  # select_best_optimizer_lr(
-#     1,
-#     cnn_model,
-#     aug_train_loader,
-#     loss_fn,
-#     DEVICE
-# )
+selected_optimizer_class, selected_lr = select_best_optimizer_lr(
+    1,
+    cnn_model,
+    aug_train_loader,
+    loss_fn,
+    DEVICE
+)
 
 print(selected_optimizer_class, selected_lr)
 
 if selected_optimizer_class is optim.SGD:
+    WEIGHT_DECAY = 0.0001
     optimizer = selected_optimizer_class(
         cnn_model.parameters(), lr=selected_lr, weight_decay=WEIGHT_DECAY, momentum=0.9
     )
+
 else:
+    if selected_optimizer_class is optim.AdamW:
+        WEIGHT_DECAY = 0.01
+    elif selected_optimizer_class is optim.Adam:
+        WEIGHT_DECAY = 0.0001
+        
     optimizer = selected_optimizer_class(
         cnn_model.parameters(),
         lr=selected_lr,
