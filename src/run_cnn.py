@@ -52,6 +52,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 match selected_embedding:
     case EmbeddingType.GLOVE:
         print("using  GLOVE embeddings")
+        NUM_EPOCHS = 10
         EMBEDDING_DIM_VALUE = 300
         N_FILTERS_LIST = [512, 512, 512]
         FILTER_SIZES_LIST = [3, 4, 5]
@@ -70,9 +71,6 @@ match selected_embedding:
         
     case EmbeddingType.BERT:
         print("using bert embeddings")
-        BATCH_SIZE = 32
-        LEARNING_RATE = 1e-4
-        WEIGHT_DECAY = 0.01  # for adamw
         NUM_EPOCHS = 7
         EMBEDDING_DIM_VALUE = 300
         N_FILTERS_LIST = [128, 128, 128, 128]
@@ -89,6 +87,10 @@ match selected_embedding:
             hidden_dim_fc1=HIDDEN_DIM_FC1_VALUE,
             hidden_dim_fc2=HIDDEN_DIM_FC2_VALUE,
         ).to(DEVICE)
+
+BATCH_SIZE = 32
+LEARNING_RATE = 1e-4
+WEIGHT_DECAY = 1e-4
 LABEL_SMOOTHING_FACTOR = 0.1
 GRADIENT_CLIP_VALUE = 1.0
         
