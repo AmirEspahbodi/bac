@@ -72,7 +72,7 @@ match selected_embedding:
     case EmbeddingType.BERT:
         print("using bert embeddings")
         NUM_EPOCHS = 7
-        EMBEDDING_DIM_VALUE = 300
+        EMBEDDING_DIM_VALUE = 768
         N_FILTERS_LIST = [128, 128, 128, 128]
         FILTER_SIZES_LIST = [2, 3, 4, 5]
         DROPOUT_RATE_VALUE = 0.5
@@ -89,11 +89,10 @@ match selected_embedding:
         ).to(DEVICE)
 
 BATCH_SIZE = 32
-LEARNING_RATE = 1e-4
 WEIGHT_DECAY = 1e-4
 LABEL_SMOOTHING_FACTOR = 0.1
 GRADIENT_CLIP_VALUE = 1.0
-        
+
 
 # --- Early Stopping Configuration ---
 PATIENCE = 5
