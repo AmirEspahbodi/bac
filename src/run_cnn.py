@@ -69,7 +69,7 @@ match selected_embedding:
         WEIGHT_DECAY = 0.01
         NUM_EPOCHS = 6
         EMBEDDING_DIM_VALUE = 768
-        N_FILTERS_LIST = [128, 128, 128, 128]
+        N_FILTERS_LIST = [256, 256, 256, 256]
         FILTER_SIZES_LIST = [2, 3, 4, 5]
         DROPOUT_RATE_VALUE = 0.5
         HIDDEN_DIM_FC1_VALUE = 768
