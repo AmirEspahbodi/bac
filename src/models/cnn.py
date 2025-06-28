@@ -114,8 +114,9 @@ class CNNModelGLOVE(nn.Module):
 
         x_concatenated = torch.cat(conv_outputs, dim=1)
         x_dropped_out1 = self.dropout(x_concatenated)
-        x_fc1 = F.relu(self.fc1(x_dropped_out1))
-        bn_fc1 = self.bn_fc1(x_fc1)
-        x_dropped_out2 = self.dropout(bn_fc1)
+        x_fc1 = self.fc1(x_dropped_out1)
+        x_bn_fc1 = self.bn_fc1(x_fc1)
+        x_activated_fc1 = F.relu(x_bn_fc1)
+        x_dropped_out2 = self.dropout(x_activated_fc1)
         logits = self.fc2(x_dropped_out2)
         return logits
