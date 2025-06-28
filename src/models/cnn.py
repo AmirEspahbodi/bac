@@ -98,6 +98,7 @@ class CNNModelGLOVE(nn.Module):
         # Calculate total number of filters correctly
         total_filters = sum(num_filters_per_size)
         self.fc1 = nn.Linear(total_filters, hidden_dim_fc)
+        self.bn_fc1 = nn.BatchNorm1d(num_features=hidden_dim_fc)
         self.dropout = nn.Dropout(p=dropout_rate)
         self.fc2 = nn.Linear(hidden_dim_fc, num_classes)
 
@@ -113,7 +114,7 @@ class CNNModelGLOVE(nn.Module):
 
         x_concatenated = torch.cat(conv_outputs, dim=1)
         x_dropped_out1 = self.dropout(x_concatenated)
-        x_fc1 = F.relu(self.fc1(x_dropped_out1))
+        x_fc1 = F.relu(self.bn_fc1(self.fc1(x_dropped_out1)))
         x_dropped_out2 = self.dropout(x_fc1)
         logits = self.fc2(x_dropped_out2)
         return logits
