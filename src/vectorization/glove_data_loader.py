@@ -39,7 +39,7 @@ def ensure_glove_file_is_present():
             f"GloVe zip file {GLOVE_LOCAL_ZIP_PATH} not found. Attempting to download from {GLOVE_ZIP_URL}..."
         )
         try:
-            response = requests.get(GLOVE_ZIP_URL, stream=True, verify=True)
+            response = requests.get(GLOVE_ZIP_URL, stream=True, verify=False)
             response.raise_for_status()
             total_size_in_bytes = int(response.headers.get("content-length", 0))
             block_size = 1024
@@ -165,8 +165,9 @@ def data_loaders_with_glove(
     then uses a custom collate function to prepare batches with GloVe embeddings.
     """
 
+    print("call loading glove")
     vectors_map, unk_embedding = load_glove()
-
+    print("glove loaded")
     class TextDataset(Dataset):
         """
         A custom PyTorch Dataset for text data.
