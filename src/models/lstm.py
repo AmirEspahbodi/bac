@@ -26,11 +26,3 @@ class LSTMModel(nn.Module):
     y = self.fc(out)
     return y
   
-  # seond forward type
-  # def forward(self, x):
-  #   # x: (batch, seq_len, feat)
-  #   x = x.permute(1, 0, 2)
-  #   outputs, _ = self.rnn(x)
-  #   pooled = outputs.mean(dim=0)
-  #   out = self.dropout_fc(pooled)
-  #   return self.fc(out)  
