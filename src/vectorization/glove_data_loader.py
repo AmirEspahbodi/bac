@@ -129,9 +129,11 @@ def load_glove_vectors(glove_path, embedding_dim):
 
 
 def load_glove():
+    print(" 0 0 0 0 0 0 0 ")
     if not ensure_glove_file_is_present():
         logging.error("Could not obtain GloVe file. Exiting.")
         exit()
+    print(" 1, 1, 1, 1,1  ")
 
     glove_vectors_map = load_glove_vectors(GLOVE_PATH, GLOVE_EMBEDDING_DIM)
 
