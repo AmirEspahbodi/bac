@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from typing import List
 
 
-class RNNModel(nn.Module):
+class LSTMModel(nn.Module):
   def __init__(self, input_size, hidden_size, num_layers, bidirectional, num_cls, dropout_rate=0.5):
     super().__init__()
     self.rnn = nn.LSTM(input_size=input_size,
