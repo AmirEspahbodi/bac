@@ -1,6 +1,6 @@
 from copy import deepcopy
 import torch.optim as optim
-from .train_one_epoch import train_one_epoch
+from .train_one_epoch import train_one_epoch_m1
 
 
 def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, GRADIENT_CLIP_VALUE, device):
@@ -16,7 +16,7 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, GRADIENT_
             model_sgd.parameters(), lr=lr, weight_decay=1e-4, momentum=0.9
         )
         for epoch in range(num_epochs):
-            model_sgd, loss_train, accuracy = train_one_epoch(
+            model_sgd, loss_train, accuracy = train_one_epoch_m1(
                 model_sgd, train_loader, loss_fn, optimizer, device, GRADIENT_CLIP_VALUE, epoch=epoch
             )
             if accuracy == best_accuracy:

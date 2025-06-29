@@ -12,7 +12,7 @@ import torch.optim as optim
 from .dataset import get_data_loaders
 from .models import CNNModelGLOVE, CNNModelBERT
 from .utils import (
-    train_one_epoch,
+    train_one_epoch_m1,
     validation_epoch_fn,
     select_best_optimizer_lr,
 )
@@ -179,7 +179,7 @@ for epoch in range(NUM_EPOCHS):
     )
 
     # --- Train for one epoch ---
-    cnn_model, loss_train, acc_train = train_one_epoch(
+    cnn_model, loss_train, acc_train = train_one_epoch_m1(
         cnn_model,
         aug_train_loader,
         loss_fn,
