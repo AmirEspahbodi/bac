@@ -23,7 +23,6 @@ def train_one_epoch(
             # print(f"targets.shape = {targets.shape}")
             
             # Forward pass
-            optimizer.zero_grad()
             logits = model(inputs)
             loss = loss_fn(logits, targets)
             # print(f"logits.shape = {logits.shape}")

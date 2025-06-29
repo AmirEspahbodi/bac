@@ -83,12 +83,11 @@ match selected_embedding:
 
         # 5. Instantiate the model
         lstm_model = LSTMModel(
-            embedding_dim=EMBEDDING_DIM_VALUE,
-            hidden_dim=HIDDEN_DIM,
-            output_dim=NUM_ACTUAL_CLS,
-            n_layers=N_LAYERS,
+            input_size=EMBEDDING_DIM_VALUE,
+            hidden_size=HIDDEN_DIM,
+            num_layers=N_LAYERS,
             bidirectional=is_bidirectional,
-            dropout=DROPOUT,
+            num_cls=NUM_ACTUAL_CLS,
         ).to(DEVICE)
 
         bi_s = '_bi' if is_bidirectional else ''
