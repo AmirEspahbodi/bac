@@ -35,7 +35,7 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, GRADIENT_
         model_adam = deepcopy(model)
         optimizer = optim.Adam(model_adam.parameters(), lr=lr, weight_decay=1e-4)
         for epoch in range(num_epochs):
-            model_adam, loss_train, accuracy = train_one_epoch(
+            model_adam, loss_train, accuracy = train_one_epoch_m1(
                 model_adam, train_loader, loss_fn, optimizer, device, GRADIENT_CLIP_VALUE, epoch=epoch
             )
             if accuracy == best_accuracy:
@@ -54,7 +54,7 @@ def select_best_optimizer_lr(num_epochs, model, train_loader, loss_fn, GRADIENT_
         model_adamw = deepcopy(model)
         optimizer = optim.AdamW(model_adamw.parameters(), lr=lr, weight_decay=1e-4)
         for epoch in range(num_epochs):
-            model_adamw, loss_train, accuracy = train_one_epoch(
+            model_adamw, loss_train, accuracy = train_one_epoch_m1(
                 model_adamw, train_loader, loss_fn, optimizer, device, GRADIENT_CLIP_VALUE, epoch=epoch
             )
             if accuracy == best_accuracy:
