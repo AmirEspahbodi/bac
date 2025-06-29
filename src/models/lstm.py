@@ -19,8 +19,8 @@ class LSTMModel(nn.Module):
 
   def forward(self, x):
     x = x.permute(0, 2, 1)
-    outputs, _ = self.rnn(x)
-    out = outputs.mean(dim=1)
+    outputs, _ = self.rnn(x) 
+    out = outputs.mean(dim=0) 
     out = self.dropout_fc(out)
-    y = self.fc(out)
+    y = self.fc(out) 
     return y
