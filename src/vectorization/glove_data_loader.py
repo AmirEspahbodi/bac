@@ -9,7 +9,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from transformers import BertTokenizer
 from typing import List, Tuple
-
+from pathlib import Path
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +23,7 @@ GLOVE_EMBEDDING_DIM = 300
 GLOVE_PATH = f"./{GLOVE_DIR}/{GLOVE_FILE_NAME}"
 GLOVE_ZIP_URL = "http://nlp.stanford.edu/data/glove.6B.zip"
 GLOVE_LOCAL_ZIP_PATH = f"{GLOVE_DIR}/glove.6B.zip"
+Path(f"{os.getcwd()}/{GLOVE_DIR}").mkdir(parents=True, exist_ok=True)
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -58,15 +59,11 @@ def ensure_glove_file_is_present():
                     file.write(data)
             logging.info(f"Successfully downloaded {GLOVE_LOCAL_ZIP_PATH}")
         except requests.exceptions.RequestException as e:
-            print(f"here 2 2 2 2 2 {e}")
-
             logging.error(f"Error downloading GloVe zip file: {e}")
             if os.path.exists(GLOVE_LOCAL_ZIP_PATH):
                 os.remove(GLOVE_LOCAL_ZIP_PATH)
             return False
         except Exception as e:
-            print(f"here 2 2 2 2 2 {e}")
-
             logging.error(f"An unexpected error occurred during download: {e}")
             if os.path.exists(GLOVE_LOCAL_ZIP_PATH):
                 os.remove(GLOVE_LOCAL_ZIP_PATH)
