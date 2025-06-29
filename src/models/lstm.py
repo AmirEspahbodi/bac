@@ -18,9 +18,8 @@ class LSTMModel(nn.Module):
     self.dropout_fc = nn.Dropout(dropout_rate)
 
   def forward(self, x):
-    x = x.permute(0, 2, 1)
-    outputs, _ = self.rnn(x) 
-    out = outputs.mean(dim=0) 
+    outputs, _ = self.rnn(x)
+    out = outputs.mean(dim=0)
     out = self.dropout_fc(out)
     y = self.fc(out) 
     return y
