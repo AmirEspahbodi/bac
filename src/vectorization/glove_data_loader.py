@@ -31,11 +31,9 @@ logging.basicConfig(
 
 # --- GloVe File Handling ---
 def ensure_glove_file_is_present():
-    print("here 0 0 0 0 0")
     if os.path.exists(GLOVE_PATH):
         logging.info(f"Found existing GloVe text file: {GLOVE_PATH}")
         return True
-    print("here 1 1 1 1 1")
     if not os.path.exists(GLOVE_LOCAL_ZIP_PATH):
         logging.info(
             f"GloVe zip file {GLOVE_LOCAL_ZIP_PATH} not found. Attempting to download from {GLOVE_ZIP_URL}..."
@@ -60,18 +58,21 @@ def ensure_glove_file_is_present():
                     file.write(data)
             logging.info(f"Successfully downloaded {GLOVE_LOCAL_ZIP_PATH}")
         except requests.exceptions.RequestException as e:
+            print(f"here 2 2 2 2 2 {e}")
+
             logging.error(f"Error downloading GloVe zip file: {e}")
             if os.path.exists(GLOVE_LOCAL_ZIP_PATH):
                 os.remove(GLOVE_LOCAL_ZIP_PATH)
             return False
         except Exception as e:
+            print(f"here 2 2 2 2 2 {e}")
+
             logging.error(f"An unexpected error occurred during download: {e}")
             if os.path.exists(GLOVE_LOCAL_ZIP_PATH):
                 os.remove(GLOVE_LOCAL_ZIP_PATH)
             return False
     else:
         logging.info(f"Found existing GloVe zip file: {GLOVE_LOCAL_ZIP_PATH}")
-    print("here 2 2 2 2 2")
 
     logging.info(
         f"Attempting to extract {GLOVE_FILE_NAME} from {GLOVE_LOCAL_ZIP_PATH}..."
