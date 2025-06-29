@@ -85,7 +85,7 @@ match selected_embedding:
                          input_size=GLOVE_EMBEDDING_DIM,
                          hidden_size=LSTM_HIDDEN_SIZE,
                          num_layers=LSTM_NUM_LAYERS,
-                         bidirectional=is_bidirectional,
+                         bidirectional=False if not is_bidirectional else True ,
                          num_cls=NUM_ACTUAL_CLS,
                          dropout_rate=LSTM_DROPOUT_RATE
                          ).to(DEVICE)
@@ -109,7 +109,7 @@ match selected_embedding:
                          input_size=EMBEDDING_DIM_VALUE,
                          hidden_size=LSTM_HIDDEN_SIZE,
                          num_layers=LSTM_NUM_LAYERS,
-                         bidirectional=is_bidirectional,
+                         bidirectional=False if not is_bidirectional else True ,
                          num_cls=NUM_ACTUAL_CLS,
                          dropout_rate=LSTM_DROPOUT_RATE
                          ).to(DEVICE)
