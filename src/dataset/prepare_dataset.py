@@ -20,12 +20,14 @@ def get_data_loaders(embedding_type:EmbeddingType):
     
     match embedding_type:
         case EmbeddingType.GLOVE:
+            print("here start")
             aug_train_loader, val_loader, test_loader = data_loaders_with_glove(
                 aug_train_dataset,
                 test_dataset,
                 validation_dataset,
                 bert_tokenizer,
             )
+            print("here end")
         case EmbeddingType.BERT:
             aug_train_loader, val_loader, test_loader = get_data_loaders_bert(
                 aug_train_dataset,
