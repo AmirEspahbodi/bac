@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader, Dataset
 from transformers import BertTokenizer
 from typing import List, Tuple
 from pathlib import Path
+from torch.nn.utils.rnn import pad_sequence
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -211,31 +212,20 @@ def data_loaders_with_glove(
         to their corresponding GloVe vectors, pads the sequences to a uniform length,
         and returns the batch as a pair of PyTorch tensors.
         """
-        texts, labels = zip(*batch)
-
-        # Determine the length of the longest sequence in the batch
-        max_len = max(len(text) for text in texts)
-
-        # Get the dimension of the GloVe embeddings
-        embedding_dim = len(unk_embedding)
-
-        # Create a tensor to hold the padded sequences of embeddings
-        padded_texts = torch.zeros(len(texts), max_len, embedding_dim)
-
-        for i, text in enumerate(texts):
+        labels = torch.LongTensor([b[0] for b in batch]) - 1
+        tokens = [b[1] for b in batch]
+        vecs = []
+        for i, token in enumerate(tokens):
             # For each token, look up its embedding, or use the unknown embedding
             embeddings = [
-                torch.tensor(vectors_map.get(token, unk_embedding)) for token in text
+                torch.tensor(vectors_map.get(token, unk_embedding)) for token in tokens
             ]
             # Stack embeddings for the current text
             if embeddings:
                 embeddings_tensor = torch.stack(embeddings)
-                padded_texts[i, : len(text)] = embeddings_tensor
+                vecs[i, : len(tokens)] = embeddings_tensor
 
-        # Convert labels to a tensor
-        labels_tensor = torch.tensor(labels, dtype=torch.long)
-
-        return padded_texts, labels_tensor
+        return vecs, labels
 
     # Create dataset instances
     train_data = TextDataset(train_dataset, bert_tokenizer)
