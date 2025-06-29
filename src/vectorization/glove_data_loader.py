@@ -71,6 +71,7 @@ def ensure_glove_file_is_present():
             return False
     else:
         logging.info(f"Found existing GloVe zip file: {GLOVE_LOCAL_ZIP_PATH}")
+    print("here 2 2 2 2 2")
 
     logging.info(
         f"Attempting to extract {GLOVE_FILE_NAME} from {GLOVE_LOCAL_ZIP_PATH}..."
@@ -99,6 +100,7 @@ def ensure_glove_file_is_present():
     except Exception as e:
         logging.error(f"An error occurred during extraction: {e}")
         return False
+    print("here 3 3 3 3 3")
 
 
 def load_glove_vectors(glove_path, embedding_dim):
