@@ -18,6 +18,10 @@ def train_one_epoch_m1(
             inputs = inputs.to(device)
             targets = targets.to(device)
             
+            print("\nDEBUG: - - - - -")
+            print(f"inputs.shape = {inputs.shape}")
+            print(f"targets.shape = {targets.shape}")
+            print("\nDEBUG: - - - - -")
             # Forward pass
             logits = model(inputs)
             loss = loss_fn(logits, targets)
