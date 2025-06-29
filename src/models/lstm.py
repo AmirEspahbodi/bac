@@ -11,7 +11,7 @@ class LSTMModel(nn.Module):
                              hidden_size=hidden_size,
                              num_layers=num_layers,
                              bidirectional=bidirectional,
-                             batch_first=False,
+                             batch_first=True,
                              dropout=dropout_rate if num_layers > 1 else 0) 
     fc_input_features = hidden_size * 2 if bidirectional else hidden_size
     self.fc = nn.Linear(fc_input_features, num_cls) 
@@ -19,7 +19,7 @@ class LSTMModel(nn.Module):
 
   def forward(self, x):
     outputs, _ = self.rnn(x)
-    out = outputs.mean(dim=0)
+    out = outputs.mean(dim=1)
     out = self.dropout_fc(out)
     y = self.fc(out) 
     return y
