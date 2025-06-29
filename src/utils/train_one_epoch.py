@@ -17,12 +17,6 @@ def train_one_epoch_m1(
                 tepoch.set_description(f"Epoch {epoch}")
             inputs = inputs.to(device)
             targets = targets.to(device)
-
-            # --- START DEBUGGING STEP ---
-            # Add these two lines to see what's being passed to the model
-            print(f"DEBUG: The type of 'inputs' is: {type(inputs)}")
-            print(f"DEBUG: The shape of 'inputs' is: {inputs.shape}")
-            # --- END DEBUGGING STEP ---
             
             # Forward pass
             logits = model(inputs)
