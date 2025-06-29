@@ -76,19 +76,20 @@ match selected_embedding:
         print("using  GLOVE embeddings")
 
         NUM_EPOCHS = 7
-        EMBEDDING_DIM_VALUE = 300
-        HIDDEN_DIM = 256 
-        N_LAYERS = 2
-        DROPOUT = 0.5
-
-        # 5. Instantiate the model
+        GLOVE_EMBEDDING_DIM = 300
+        LSTM_HIDDEN_SIZE = 128 
+        LSTM_NUM_LAYERS = 2
+        LSTM_BIDIRECTIONAL = False
+        LSTM_DROPOUT_RATE = 0.4
+        MAX_SEQ_LEN = 256
         lstm_model = LSTMModel(
-            input_size=EMBEDDING_DIM_VALUE,
-            hidden_size=HIDDEN_DIM,
-            num_layers=N_LAYERS,
-            bidirectional=is_bidirectional,
-            num_cls=NUM_ACTUAL_CLS,
-        ).to(DEVICE)
+                         input_size=GLOVE_EMBEDDING_DIM,
+                         hidden_size=LSTM_HIDDEN_SIZE,
+                         num_layers=LSTM_NUM_LAYERS,
+                         bidirectional=LSTM_BIDIRECTIONAL,
+                         num_cls=NUM_ACTUAL_CLS,
+                         dropout_rate=LSTM_DROPOUT_RATE
+                         ).to(DEVICE)
 
         bi_s = '_bi' if is_bidirectional else ''
         att_s = "_a" if is_attention else ''
