@@ -3,7 +3,7 @@ from tqdm import tqdm
 from .average_meter import AverageMeter
 
 
-def train_one_epoch_cnn(
+def train_one_epoch_m1(
     model, train_loader, loss_fn, optimizer, device, clip_value, epoch=None
 ):
     model.train()
