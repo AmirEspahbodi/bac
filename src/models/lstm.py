@@ -18,10 +18,9 @@ class LSTMModel(nn.Module):
     self.dropout_fc = nn.Dropout(dropout_rate)
 
   def forward(self, x):
-    x = x.permute(0, 2, 1)
-    outputs, _ = self.rnn(x) # outputs: (seq_len, batch, num_directions * hidden_size)
-    # Aggregate RNN outputs. Using mean pooling over time steps.
-    out = outputs.mean(dim=0) # Shape: (batch, num_directions * hidden_size)
+    x = x.permute(1, 0, 2)
+    outputs, _ = self.rnn(x) 
+    out = outputs.mean(dim=0) 
     out = self.dropout_fc(out)
-    y = self.fc(out) # Shape: (batch, num_cls)
+    y = self.fc(out) 
     return y
