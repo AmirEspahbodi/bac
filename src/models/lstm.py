@@ -17,10 +17,20 @@ class LSTMModel(nn.Module):
     self.fc = nn.Linear(fc_input_features, num_cls) 
     self.dropout_fc = nn.Dropout(dropout_rate)
 
+  # first forward type
   def forward(self, x):
     # x = x.permute(0, 2, 1)
     outputs, _ = self.rnn(x)
-    out = outputs.mean(dim=1)
+    out = outputs.mean(dim=0)
     out = self.dropout_fc(out)
     y = self.fc(out)
     return y
+  
+  # seond forward type
+  # def forward(self, x):
+  #   # x: (batch, seq_len, feat)
+  #   x = x.permute(1, 0, 2)
+  #   outputs, _ = self.rnn(x)
+  #   pooled = outputs.mean(dim=0)
+  #   out = self.dropout_fc(pooled)
+  #   return self.fc(out)  

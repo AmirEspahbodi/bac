@@ -156,66 +156,23 @@ def load_glove():
 
 ## get data loaders first method
 
-# def collate_with_glove(batch, hf_tokenizer, glove_word_vectors, embedding_dimension, unk_word_embedding, max_seq_len):
-#     labels_list_from_batch = [item['label'] for item in batch]
-#     texts_list_from_batch = [item['text'] for item in batch]
-#     labels_tensor = torch.LongTensor(labels_list_from_batch)
-#     all_sequences_as_vecs = []
-#     for text_item in texts_list_from_batch:
-#         string_tokens = hf_tokenizer.tokenize(str(text_item))[:max_seq_len] 
-#         if not string_tokens:
-#             all_sequences_as_vecs.append(torch.tensor(unk_word_embedding, dtype=torch.float).unsqueeze(0))
-#             continue
-#         current_sequence_embeddings = [torch.tensor(glove_word_vectors.get(token_str, unk_word_embedding), dtype=torch.float) for token_str in string_tokens]
-#         if not current_sequence_embeddings:
-#             all_sequences_as_vecs.append(torch.tensor(unk_word_embedding, dtype=torch.float).unsqueeze(0))
-#         else:
-#             all_sequences_as_vecs.append(torch.stack(current_sequence_embeddings))
-#     vecs_padded = pad_sequence(all_sequences_as_vecs, batch_first=False, padding_value=0.0)
-#     return vecs_padded, labels_tensor
-
-# def data_loaders_with_glove(
-#     train_dataset: pd.DataFrame,
-#     test_dataset: pd.DataFrame,
-#     validation_dataset: pd.DataFrame,
-#     bert_tokenizer: BertTokenizer,
-#     batch_size: int = 32,
-#     max_seq_len = 512
-    
-# ):
-#     def create_data_list(texts_list, labels_list):
-#         return [{'text': text, 'label': label} for text, label in zip(texts_list, labels_list)]
-
-#     train_texts = train_dataset['text_input'].tolist()
-#     train_labels = train_dataset['assignee_encoded'].tolist()
-
-#     validation_texts = validation_dataset['text_input'].tolist()
-#     validation_labels = validation_dataset['assignee_encoded'].tolist()
-
-#     test_texts = test_dataset['text_input'].tolist()
-#     test_labels = test_dataset['assignee_encoded'].tolist()
-
-
-#     train_data_list = create_data_list(train_texts, train_labels)
-#     validation_data_list = create_data_list(validation_texts, validation_labels)
-#     test_data_list = create_data_list(test_texts, test_labels)
-    
-#     vectors_map, unk_embedding = load_glove()
-
-#     collate_fn_custom = partial(collate_with_glove,
-#                                 hf_tokenizer=bert_tokenizer,
-#                                 glove_word_vectors=vectors_map,
-#                                 embedding_dimension=GLOVE_EMBEDDING_DIM,
-#                                 unk_word_embedding=unk_embedding,
-#                                 max_seq_len=max_seq_len)
-#     train_loader = DataLoader(train_data_list, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_custom, num_workers=0)
-#     validation_loader = DataLoader(validation_data_list, batch_size=batch_size, collate_fn=collate_fn_custom, num_workers=0)
-#     test_loader = DataLoader(test_data_list, batch_size=batch_size, collate_fn=collate_fn_custom, num_workers=0)
-
-#     return train_loader, validation_loader, test_loader
-
-## get data loaders second method
-
+def collate_with_glove(batch, hf_tokenizer, glove_word_vectors, embedding_dimension, unk_word_embedding, max_seq_len):
+    labels_list_from_batch = [item['label'] for item in batch]
+    texts_list_from_batch = [item['text'] for item in batch]
+    labels_tensor = torch.LongTensor(labels_list_from_batch)
+    all_sequences_as_vecs = []
+    for text_item in texts_list_from_batch:
+        string_tokens = hf_tokenizer.tokenize(str(text_item))[:max_seq_len] 
+        if not string_tokens:
+            all_sequences_as_vecs.append(torch.tensor(unk_word_embedding, dtype=torch.float).unsqueeze(0))
+            continue
+        current_sequence_embeddings = [torch.tensor(glove_word_vectors.get(token_str, unk_word_embedding), dtype=torch.float) for token_str in string_tokens]
+        if not current_sequence_embeddings:
+            all_sequences_as_vecs.append(torch.tensor(unk_word_embedding, dtype=torch.float).unsqueeze(0))
+        else:
+            all_sequences_as_vecs.append(torch.stack(current_sequence_embeddings))
+    vecs_padded = pad_sequence(all_sequences_as_vecs, batch_first=False, padding_value=0.0)
+    return vecs_padded, labels_tensor
 
 def data_loaders_with_glove(
     train_dataset: pd.DataFrame,
@@ -223,101 +180,144 @@ def data_loaders_with_glove(
     validation_dataset: pd.DataFrame,
     bert_tokenizer: BertTokenizer,
     batch_size: int = 32,
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
-    """
-    Creates PyTorch DataLoaders for training, testing, and validation sets.
+    max_seq_len = 512
+    
+):
+    def create_data_list(texts_list, labels_list):
+        return [{'text': text, 'label': label} for text, label in zip(texts_list, labels_list)]
 
-    This function initializes custom PyTorch Datasets for each data split and
-    then uses a custom collate function to prepare batches with GloVe embeddings.
-    """
+    train_texts = train_dataset['text_input'].tolist()
+    train_labels = train_dataset['assignee_encoded'].tolist()
 
+    validation_texts = validation_dataset['text_input'].tolist()
+    validation_labels = validation_dataset['assignee_encoded'].tolist()
+
+    test_texts = test_dataset['text_input'].tolist()
+    test_labels = test_dataset['assignee_encoded'].tolist()
+
+
+    train_data_list = create_data_list(train_texts, train_labels)
+    validation_data_list = create_data_list(validation_texts, validation_labels)
+    test_data_list = create_data_list(test_texts, test_labels)
+    
     vectors_map, unk_embedding = load_glove()
-    class TextDataset(Dataset):
-        """
-        A custom PyTorch Dataset for text data.
-        It tokenizes the text using a BERT tokenizer upon initialization.
-        """
 
-        def __init__(self, dataframe: pd.DataFrame, tokenizer: BertTokenizer):
-            """
-            Initializes the dataset.
-            """
-            # Ensure the required columns exist
-            if (
-                "text_input" not in dataframe.columns
-                or "assignee_encoded" not in dataframe.columns
-            ):
-                raise ValueError(
-                    "Input DataFrame must have 'text_input' and 'assignee_encoded' columns."
-                )
+    collate_fn_custom = partial(collate_with_glove,
+                                hf_tokenizer=bert_tokenizer,
+                                glove_word_vectors=vectors_map,
+                                embedding_dimension=GLOVE_EMBEDDING_DIM,
+                                unk_word_embedding=unk_embedding,
+                                max_seq_len=max_seq_len)
+    train_loader = DataLoader(train_data_list, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_custom, num_workers=0)
+    validation_loader = DataLoader(validation_data_list, batch_size=batch_size, collate_fn=collate_fn_custom, num_workers=0)
+    test_loader = DataLoader(test_data_list, batch_size=batch_size, collate_fn=collate_fn_custom, num_workers=0)
 
-            self.labels = dataframe["assignee_encoded"].values
-            # Tokenize all texts at once for efficiency
-            self.texts = [tokenizer.tokenize(text) for text in dataframe["text_input"]]
+    return train_loader, validation_loader, test_loader
 
-        def __len__(self) -> int:
-            """Returns the number of samples in the dataset."""
-            return len(self.labels)
+## get data loaders second method
 
-        def __getitem__(self, idx: int) -> Tuple[List[str], int]:
-            """
-            Retrieves a sample from the dataset.
-            """
-            return self.texts[idx], self.labels[idx]
 
-    def collate_fn_glove(
-        batch: List[Tuple[List[str], int]],
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        A custom collate function to process a batch of data for GloVe embeddings.
+# def data_loaders_with_glove(
+#     train_dataset: pd.DataFrame,
+#     test_dataset: pd.DataFrame,
+#     validation_dataset: pd.DataFrame,
+#     bert_tokenizer: BertTokenizer,
+#     batch_size: int = 32,
+# ) -> Tuple[DataLoader, DataLoader, DataLoader]:
+#     """
+#     Creates PyTorch DataLoaders for training, testing, and validation sets.
 
-        This function takes a batch of tokenized texts and labels, converts the tokens
-        to their corresponding GloVe vectors, pads the sequences to a uniform length,
-        and returns the batch as a pair of PyTorch tensors.
-        """
-        texts, labels = zip(*batch)
+#     This function initializes custom PyTorch Datasets for each data split and
+#     then uses a custom collate function to prepare batches with GloVe embeddings.
+#     """
 
-        # Determine the length of the longest sequence in the batch
-        max_len = max(len(text) for text in texts)
+#     vectors_map, unk_embedding = load_glove()
+#     class TextDataset(Dataset):
+#         """
+#         A custom PyTorch Dataset for text data.
+#         It tokenizes the text using a BERT tokenizer upon initialization.
+#         """
 
-        # Get the dimension of the GloVe embeddings
-        embedding_dim = len(unk_embedding)
+#         def __init__(self, dataframe: pd.DataFrame, tokenizer: BertTokenizer):
+#             """
+#             Initializes the dataset.
+#             """
+#             # Ensure the required columns exist
+#             if (
+#                 "text_input" not in dataframe.columns
+#                 or "assignee_encoded" not in dataframe.columns
+#             ):
+#                 raise ValueError(
+#                     "Input DataFrame must have 'text_input' and 'assignee_encoded' columns."
+#                 )
 
-        # Create a tensor to hold the padded sequences of embeddings
-        padded_texts = torch.zeros(len(texts), max_len, embedding_dim)
+#             self.labels = dataframe["assignee_encoded"].values
+#             # Tokenize all texts at once for efficiency
+#             self.texts = [tokenizer.tokenize(text) for text in dataframe["text_input"]]
 
-        for i, text in enumerate(texts):
-            # For each token, look up its embedding, or use the unknown embedding
-            embeddings = [
-                torch.tensor(vectors_map.get(token, unk_embedding)) for token in text
-            ]
-            # Stack embeddings for the current text
-            if embeddings:
-                embeddings_tensor = torch.stack(embeddings)
-                padded_texts[i, : len(text)] = embeddings_tensor
+#         def __len__(self) -> int:
+#             """Returns the number of samples in the dataset."""
+#             return len(self.labels)
 
-        # Convert labels to a tensor
-        labels_tensor = torch.tensor(labels, dtype=torch.long)
+#         def __getitem__(self, idx: int) -> Tuple[List[str], int]:
+#             """
+#             Retrieves a sample from the dataset.
+#             """
+#             return self.texts[idx], self.labels[idx]
 
-        return padded_texts, labels_tensor
+#     def collate_fn_glove(
+#         batch: List[Tuple[List[str], int]],
+#     ) -> Tuple[torch.Tensor, torch.Tensor]:
+#         """
+#         A custom collate function to process a batch of data for GloVe embeddings.
 
-    # Create dataset instances
-    train_data = TextDataset(train_dataset, bert_tokenizer)
-    test_data = TextDataset(test_dataset, bert_tokenizer)
-    validation_data = TextDataset(validation_dataset, bert_tokenizer)
+#         This function takes a batch of tokenized texts and labels, converts the tokens
+#         to their corresponding GloVe vectors, pads the sequences to a uniform length,
+#         and returns the batch as a pair of PyTorch tensors.
+#         """
+#         texts, labels = zip(*batch)
 
-    # Create DataLoader instances
-    train_loader = DataLoader(
-        train_data, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_glove
-    )
-    test_loader = DataLoader(
-        test_data, batch_size=batch_size, shuffle=False, collate_fn=collate_fn_glove
-    )
-    validation_loader = DataLoader(
-        validation_data,
-        batch_size=batch_size,
-        shuffle=False,
-        collate_fn=collate_fn_glove,
-    )
+#         # Determine the length of the longest sequence in the batch
+#         max_len = max(len(text) for text in texts)
 
-    return train_loader, test_loader, validation_loader
+#         # Get the dimension of the GloVe embeddings
+#         embedding_dim = len(unk_embedding)
+
+#         # Create a tensor to hold the padded sequences of embeddings
+#         padded_texts = torch.zeros(len(texts), max_len, embedding_dim)
+
+#         for i, text in enumerate(texts):
+#             # For each token, look up its embedding, or use the unknown embedding
+#             embeddings = [
+#                 torch.tensor(vectors_map.get(token, unk_embedding)) for token in text
+#             ]
+#             # Stack embeddings for the current text
+#             if embeddings:
+#                 embeddings_tensor = torch.stack(embeddings)
+#                 padded_texts[i, : len(text)] = embeddings_tensor
+
+#         # Convert labels to a tensor
+#         labels_tensor = torch.tensor(labels, dtype=torch.long)
+
+#         return padded_texts, labels_tensor
+
+#     # Create dataset instances
+#     train_data = TextDataset(train_dataset, bert_tokenizer)
+#     test_data = TextDataset(test_dataset, bert_tokenizer)
+#     validation_data = TextDataset(validation_dataset, bert_tokenizer)
+
+#     # Create DataLoader instances
+#     train_loader = DataLoader(
+#         train_data, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_glove
+#     )
+#     test_loader = DataLoader(
+#         test_data, batch_size=batch_size, shuffle=False, collate_fn=collate_fn_glove
+#     )
+#     validation_loader = DataLoader(
+#         validation_data,
+#         batch_size=batch_size,
+#         shuffle=False,
+#         collate_fn=collate_fn_glove,
+#     )
+
+#     return train_loader, test_loader, validation_loader
