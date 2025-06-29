@@ -31,9 +31,11 @@ logging.basicConfig(
 
 # --- GloVe File Handling ---
 def ensure_glove_file_is_present():
+    print("here 0 0 0 0 0")
     if os.path.exists(GLOVE_PATH):
         logging.info(f"Found existing GloVe text file: {GLOVE_PATH}")
         return True
+    print("here 1 1 1 1 1")
     if not os.path.exists(GLOVE_LOCAL_ZIP_PATH):
         logging.info(
             f"GloVe zip file {GLOVE_LOCAL_ZIP_PATH} not found. Attempting to download from {GLOVE_ZIP_URL}..."
@@ -133,7 +135,7 @@ def load_glove():
     if not ensure_glove_file_is_present():
         logging.error("Could not obtain GloVe file. Exiting.")
         exit()
-    print(" 1, 1, 1, 1,1  ")
+    print(" 1, 1, 1, 1, 1  ")
 
     glove_vectors_map = load_glove_vectors(GLOVE_PATH, GLOVE_EMBEDDING_DIM)
 
