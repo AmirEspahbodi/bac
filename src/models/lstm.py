@@ -242,30 +242,11 @@ class LSTMModel(nn.Module):
         
         # Initialize weights
         self._init_weights()
-        
-    def _init_weights(self):
-        """Initialize model weights"""
-        for name, param in self.named_parameters():
-            if 'weight_ih' in name:
-                nn.init.xavier_uniform_(param)
-            elif 'weight_hh' in name:
-                nn.init.orthogonal_(param)
-            elif 'bias' in name:
-                nn.init.constant_(param, 0.0)
-            elif 'weight' in name and param.dim() == 2:
-                nn.init.xavier_uniform_(param)
-                
-    def create_padding_mask(self, inputs: torch.Tensor, lengths: torch.Tensor) -> torch.Tensor:
-        """Create padding mask for attention mechanism"""
-        batch_size, max_len = inputs.size(0), inputs.size(1)
-        mask = torch.arange(max_len, device=inputs.device).expand(batch_size, max_len)
-        mask = mask < lengths.unsqueeze(1)
-        return mask
-        
+         
     def forward(self, inputs: torch.Tensor, lengths: Optional[torch.Tensor] = None) -> Dict[str, torch.Tensor]:
 
         self.lstm.flatten_parameters()
-        inputs = inputs.permute(1, 0, 2)
+        # inputs = inputs.permute(1, 0, 2)
         
         # Input projection
         projected_inputs = self.input_projection(inputs)
@@ -312,13 +293,33 @@ class LSTMModel(nn.Module):
             if self.config.bidirectional:
                 final_representation = torch.cat([hidden[-2], hidden[-1]], dim=1)
             else:
-                final_representation = hidden[-1]
+                final_representation = hidden[-1, :, :]
                 
         # Classification
         logits = self.classifier(final_representation)
         
         return logits
-        
+
+    def _init_weights(self):
+        """Initialize model weights"""
+        for name, param in self.named_parameters():
+            if 'weight_ih' in name:
+                nn.init.xavier_uniform_(param)
+            elif 'weight_hh' in name:
+                nn.init.orthogonal_(param)
+            elif 'bias' in name:
+                nn.init.constant_(param, 0.0)
+            elif 'weight' in name and param.dim() == 2:
+                nn.init.xavier_uniform_(param)
+                
+    def create_padding_mask(self, inputs: torch.Tensor, lengths: torch.Tensor) -> torch.Tensor:
+        """Create padding mask for attention mechanism"""
+        batch_size, max_len = inputs.size(0), inputs.size(1)
+        mask = torch.arange(max_len, device=inputs.device).expand(batch_size, max_len)
+        mask = mask < lengths.unsqueeze(1)
+        return mask
+       
+       
     def get_attention_weights(self) -> Optional[torch.Tensor]:
         """Get the last computed attention weights"""
         return getattr(self, '_last_attention_weights', None)
