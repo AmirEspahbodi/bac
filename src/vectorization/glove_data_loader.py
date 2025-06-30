@@ -239,7 +239,7 @@ def data_loaders_with_glove(
         It tokenizes the text using a BERT tokenizer upon initialization.
         """
 
-        def __init__(self, dataframe: pd.DataFrame, tokenizer: BertTokenizer):
+        def __init__(self, dataframe: pd.DataFrame, tokenizer: BertTokenizer, remove_stop_words=False):
             """
             Initializes the dataset.
             """
@@ -254,7 +254,8 @@ def data_loaders_with_glove(
 
             self.labels = dataframe["assignee_encoded"].values
             # Tokenize all texts at once for efficiency
-            self.texts = [tokenizer.tokenize(cleaned_text) for cleaned_text in [clean_str(text) for text in dataframe["text_input"]] ]
+            texts = [clean_str(text) for text in dataframe["text_input"]] if remove_stop_words else dataframe["text_input"]
+            self.texts = [tokenizer.tokenize(text) for text in  texts]
 
         def __len__(self) -> int:
             """Returns the number of samples in the dataset."""
@@ -303,7 +304,7 @@ def data_loaders_with_glove(
         return padded_texts, labels_tensor
 
     # Create dataset instances
-    train_data = TextDataset(train_dataset, bert_tokenizer)
+    train_data = TextDataset(train_dataset, bert_tokenizer, remove_stop_words=True)
     test_data = TextDataset(test_dataset, bert_tokenizer)
     validation_data = TextDataset(validation_dataset, bert_tokenizer)
 
