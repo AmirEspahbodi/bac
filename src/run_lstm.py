@@ -104,8 +104,8 @@ match selected_embedding:
 
         bi_s = '_bi' if is_bidirectional else ''
         att_s = "_a" if is_attention else ''
-        model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_glove_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_gglove_result.json"
+        model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_glove_rsw{remove_stop_words}_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_gglove_rsw{remove_stop_words}_result.json"
         Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
         Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
@@ -130,8 +130,8 @@ match selected_embedding:
         bi_s = '_bi' if is_bidirectional else ''
         att_s = "_a" if is_attention else ''
         
-        model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_bert_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_bert_result.json"
+        model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_bert_rsw{remove_stop_words}_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_bert_rsw{remove_stop_words}_result.json"
         Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
         Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 

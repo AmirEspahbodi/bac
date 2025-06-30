@@ -81,8 +81,8 @@ match selected_embedding:
             hidden_dim_fc=HIDDEN_DIM_FC_VALUE
         ).to(DEVICE)
         BATCH_SIZE = 32
-        model_save_path = f"{os.getcwd()}/.models/cnn_glove_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/cnn_glove_result.json"
+        model_save_path = f"{os.getcwd()}/.models/cnn_glove_rsw{remove_stop_words}_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/cnn_glove_rsw{remove_stop_words}_result.json"
         Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
         Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
@@ -121,8 +121,8 @@ match selected_embedding:
             hidden_dim_fc=HIDDEN_DIM_FC_VALUE
         ).to(DEVICE)
         BATCH_SIZE = 32
-        model_save_path = f"{os.getcwd()}/.models/cnn_bert_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/cnn_bert_result.json"
+        model_save_path = f"{os.getcwd()}/.models/cnn_bert_rsw{remove_stop_words}_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/cnn_bert_rsw{remove_stop_words}_result.json"
         Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
         Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
 
