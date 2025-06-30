@@ -36,10 +36,10 @@ def parse_arguments():
     parser.add_argument(
         "-b",
         "--bidirectional",
-        default=0,
-        type=str,
+        default=False,
+        type=bool,
         required=False,
-        choices=[0, 1],
+        choices=[False, True],
         help="The type of word embedding to use.",
     )
 
@@ -64,10 +64,10 @@ def parse_arguments():
     parser.add_argument(
         "-a",
         "--attention",
-        default=0,
-        type=str,
+        default=False,
+        type=bool,
         required=False,
-        choices=[0, 1],
+        choices=[False, True],
         help="The type of word embedding to use.",
     )
 
