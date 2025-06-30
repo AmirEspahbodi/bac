@@ -87,7 +87,15 @@ def parse_arguments():
         choices=[0, 1],
         help="remove stop words on tain dataset.",
     )
-
+    parser.add_argument(
+        "-nah",
+        "--num_attention_heads",
+        type=int,
+        default=0,
+        required=False,
+        choices=[0, 1],
+        help="remove stop words on tain dataset.",
+    )
     return parser.parse_args()
 
 
@@ -102,6 +110,7 @@ try:
     residual = args.residual
     is_bidirectional =  True if is_bidirectional else False
     is_attention =  True if is_attention else False
+    num_attention_heads = args.num_attention_heads
 
 
 except argparse.ArgumentError as e:
@@ -125,13 +134,13 @@ match selected_embedding:
         config = LSTMConfig(
             hidden_size=hidden_size_dim,
             num_layers=num_layers,
-            attention_heads=4,
             dropout=0.4,
             input_size = 300,
             num_classes = NUM_ACTUAL_CLS,
             residual_connections=residual,
             bidirectional=is_bidirectional,
             use_attention=is_attention,
+            attention_heads=num_attention_heads,
         )
         model_save_path = f"{os.getcwd()}/.models/lstm_glove_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lstm_glove_result.json"
@@ -143,13 +152,13 @@ match selected_embedding:
         config = LSTMConfig(
             hidden_size=hidden_size_dim,
             num_layers=num_layers,
-            attention_heads=4,
             dropout=0.4,
             input_size = 768,
             num_classes = NUM_ACTUAL_CLS,
             residual_connections=residual,
             bidirectional=is_bidirectional,
             use_attention=is_attention,
+            attention_heads=num_attention_heads,
         )
         model_save_path = f"{os.getcwd()}/.models/lstm_bert_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lstm_bert_result.json"
