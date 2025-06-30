@@ -156,7 +156,7 @@ match selected_embedding:
         model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_bert_rsw{remove_stop_words}_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_bert_rsw{remove_stop_words}_result.json"
 
-lstm_model = LSTMModel(config)
+lstm_model = LSTMModel(config).to(device=DEVICE)
 
 print(f"\n------\nlstm model info: \n{get_model_info(lstm_model)}\n------\n")
 

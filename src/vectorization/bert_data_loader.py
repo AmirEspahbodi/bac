@@ -55,7 +55,8 @@ def _create_full_sequence_embeddings(
         all_embeddings.append(last_hidden_states.cpu())
 
     # Concatenate all batch results into a single final tensor
-    return torch.cat(all_embeddings, dim=0)
+    finall_embeddings = torch.cat(all_embeddings, dim=0)
+    return finall_embeddings
 
 
 def get_data_loaders_bert(

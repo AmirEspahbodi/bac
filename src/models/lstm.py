@@ -263,6 +263,7 @@ class LSTMModel(nn.Module):
         return mask
         
     def forward(self, inputs: torch.Tensor, lengths: Optional[torch.Tensor] = None) -> Dict[str, torch.Tensor]:
+
         self.lstm.flatten_parameters()
         inputs = inputs.permute(1, 0, 2)
         
