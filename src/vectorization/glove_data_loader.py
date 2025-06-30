@@ -12,6 +12,7 @@ from typing import List, Tuple
 from pathlib import Path
 from torch.nn.utils.rnn import pad_sequence
 from functools import partial
+from src.utils import clean_str
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -253,7 +254,7 @@ def data_loaders_with_glove(
 
             self.labels = dataframe["assignee_encoded"].values
             # Tokenize all texts at once for efficiency
-            self.texts = [tokenizer.tokenize(text) for text in dataframe["text_input"]]
+            self.texts = [tokenizer.tokenize(cleaned_text) for cleaned_text in [clean_str(text) for text in dataframe["text_input"]] ]
 
         def __len__(self) -> int:
             """Returns the number of samples in the dataset."""
