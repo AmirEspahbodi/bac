@@ -317,12 +317,7 @@ class LSTMModel(nn.Module):
         # Classification
         logits = self.classifier(final_representation)
         
-        return {
-            'logits': logits,
-            'attention_weights': attention_weights,
-            'hidden_states': hidden_states,
-            'final_representation': final_representation
-        }
+        return logits
         
     def get_attention_weights(self) -> Optional[torch.Tensor]:
         """Get the last computed attention weights"""
