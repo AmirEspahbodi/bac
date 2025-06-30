@@ -50,7 +50,7 @@ def parse_arguments():
 try:
     args = parse_arguments()
     selected_embedding = EmbeddingType(args.embedding)
-    remove_stop_words = EmbeddingType(args.remove_stop_words)
+    remove_stop_words = args.remove_stop_words
 
 except argparse.ArgumentError as e:
     print(f"Error: {e}", file=sys.stderr)
