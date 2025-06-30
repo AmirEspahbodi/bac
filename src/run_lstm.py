@@ -150,7 +150,7 @@ match selected_embedding:
             input_size = 300,
             num_classes = NUM_ACTUAL_CLS,
             residual_connections=residual,
-            use_attention=is_bidirectional,
+            bidirectional=is_bidirectional,
             use_attention=is_attention,
         )
         model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_bert_rsw{remove_stop_words}_model.pt"
