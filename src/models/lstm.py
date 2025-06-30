@@ -187,12 +187,10 @@ class LSTMModel(nn.Module):
         super().__init__()
         self.config = config
         
-        # Input projection layer
-        self.input_projection = nn.Linear(config.input_size, config.hidden_size)
         
         # LSTM layers
         self.lstm = nn.LSTM(
-            input_size=config.hidden_size,
+            input_size=config.input_size,
             hidden_size=config.hidden_size,
             num_layers=config.num_layers,
             dropout=config.dropout if config.num_layers > 1 else 0,
@@ -267,11 +265,8 @@ class LSTMModel(nn.Module):
         self.lstm.flatten_parameters()
         inputs = inputs.permute(1, 0, 2)
         
-        # Input projection
-        projected_inputs = self.input_projection(inputs)
-        
         # LSTM forward pass
-        lstm_out, (hidden, cell) = self.lstm(projected_inputs)
+        lstm_out, (hidden, cell) = self.lstm(inputs)
         
         # Apply layer normalization
         if self.layer_norm1 is not None:
