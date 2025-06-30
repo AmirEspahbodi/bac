@@ -53,6 +53,16 @@ def parse_arguments():
         help="The type of word embedding to use.",
     )
 
+    parser.add_argument(
+        "--remove_stop_words",
+        "-rsw",
+        type=str,
+        default=0,
+        required=False,
+        choices=[0, 1],
+        help="The type of word embedding to use.",
+    )
+
     return parser.parse_args()
 
 
@@ -61,6 +71,8 @@ try:
     selected_embedding = EmbeddingType(args.embedding)
     is_bidirectional = args.bidirectional
     is_attention = args.attention
+    remove_stop_words = EmbeddingType(args.remove_stop_words)
+
 except argparse.ArgumentError as e:
     print(f"Error: {e}", file=sys.stderr)
     sys.exit(1)

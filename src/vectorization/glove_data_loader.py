@@ -224,6 +224,7 @@ def data_loaders_with_glove(
     validation_dataset: pd.DataFrame,
     bert_tokenizer: BertTokenizer,
     batch_size: int = 32,
+    remove_stop_words=False
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
     Creates PyTorch DataLoaders for training, testing, and validation sets.
@@ -304,7 +305,7 @@ def data_loaders_with_glove(
         return padded_texts, labels_tensor
 
     # Create dataset instances
-    train_data = TextDataset(train_dataset, bert_tokenizer, remove_stop_words=True)
+    train_data = TextDataset(train_dataset, bert_tokenizer, remove_stop_words=remove_stop_words)
     test_data = TextDataset(test_dataset, bert_tokenizer)
     validation_data = TextDataset(validation_dataset, bert_tokenizer)
 

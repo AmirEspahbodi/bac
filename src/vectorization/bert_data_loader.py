@@ -4,6 +4,7 @@ from tqdm import tqdm
 from transformers import BertModel, BertTokenizer
 from torch.utils.data import DataLoader, TensorDataset
 from typing import Tuple, List
+from src.utils import clean_str
 
 # Ensure you have the necessary libraries installed:
 # pip install torch pandas tqdm transformers
@@ -14,7 +15,8 @@ def _create_full_sequence_embeddings(
     tokenizer: BertTokenizer,
     device: torch.device,
     max_len: int = 512,
-    batch_size: int = 16
+    batch_size: int = 16,
+    remove_stop_words=False
 ) -> torch.Tensor:
     """
     Generates embeddings for a series of texts using a sliding window approach for long documents.
@@ -26,6 +28,8 @@ def _create_full_sequence_embeddings(
     for i in tqdm(range(0, len(texts), batch_size), desc="Generating Full Embeddings"):
         # Select a batch of texts from the pandas Series
         batch_texts = texts.iloc[i:i + batch_size].tolist()
+        if remove_stop_words:
+            batch_texts = [clean_str(s) for s in batch_texts]
 
         # Tokenize the batch. The tokenizer handles truncation and padding for you.
         inputs = tokenizer(
@@ -59,7 +63,8 @@ def get_data_loaders_bert(
     test_dataset: pd.DataFrame,
     validation_dataset: pd.DataFrame,
     tokenizer: BertTokenizer,
-    batch_size: int = 32
+    batch_size: int = 32,
+    remove_stop_words=False
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
     Creates and returns PyTorch DataLoaders for training, validation, and test sets.
@@ -74,7 +79,7 @@ def get_data_loaders_bert(
 
     # --- 2. Generate Embeddings for each dataset split ---
     train_embeddings = _create_full_sequence_embeddings(
-        train_dataset['text_input'], bert_model, tokenizer, device
+        train_dataset['text_input'], bert_model, tokenizer, device, remove_stop_words=remove_stop_words
     )
     val_embeddings = _create_full_sequence_embeddings(
         validation_dataset['text_input'], bert_model, tokenizer, device

@@ -26,9 +26,21 @@ def parse_arguments():
 
     parser.add_argument(
         "--embedding",
+        "-e",
         type=str,
         required=True,
         choices=[e.value for e in EmbeddingType],
+        help="The type of word embedding to use.",
+    )
+
+
+    parser.add_argument(
+        "--remove_stop_words",
+        "-rsw",
+        type=str,
+        default=0,
+        required=False,
+        choices=[0, 1],
         help="The type of word embedding to use.",
     )
 
@@ -38,13 +50,14 @@ def parse_arguments():
 try:
     args = parse_arguments()
     selected_embedding = EmbeddingType(args.embedding)
+    remove_stop_words = EmbeddingType(args.remove_stop_words)
 
 except argparse.ArgumentError as e:
     print(f"Error: {e}", file=sys.stderr)
     sys.exit(1)
 
 aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-    selected_embedding
+    selected_embedding, remove_stop_words
 )
 
 # --- Model & Training Configuration ---

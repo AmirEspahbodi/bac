@@ -8,7 +8,7 @@ from src.vectorization import EmbeddingType
 from src.tokenization import get_bert_tokenizer
 
 
-def get_data_loaders(embedding_type:EmbeddingType):
+def get_data_loaders(embedding_type:EmbeddingType, remove_stop_words=False):
     dataset, NUM_ACTUAL_CLS = load_dataset(
         DatasetType.GCC, dataset_rpath="./datasets/gcc_data.csv"
     )
@@ -25,6 +25,7 @@ def get_data_loaders(embedding_type:EmbeddingType):
                 test_dataset,
                 validation_dataset,
                 bert_tokenizer,
+                remove_stop_words=remove_stop_words
             )
         case EmbeddingType.BERT:
             aug_train_loader, val_loader, test_loader = get_data_loaders_bert(
@@ -32,5 +33,6 @@ def get_data_loaders(embedding_type:EmbeddingType):
                 test_dataset,
                 validation_dataset,
                 bert_tokenizer,
+                remove_stop_words=remove_stop_words
             )
     return aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS
