@@ -192,7 +192,7 @@ class LSTMModel(nn.Module):
         
         # LSTM layers
         self.lstm = nn.LSTM(
-            input_size=config.input_size,
+            input_size=config.hidden_size,
             hidden_size=config.hidden_size,
             num_layers=config.num_layers,
             dropout=config.dropout if config.num_layers > 1 else 0,
@@ -269,6 +269,7 @@ class LSTMModel(nn.Module):
         
         # Input projection
         projected_inputs = self.input_projection(inputs)
+        projected_inputs = self.dropout(projected_inputs)
         
         # LSTM forward pass
         lstm_out, (hidden, cell) = self.lstm(projected_inputs)
