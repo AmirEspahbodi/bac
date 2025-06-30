@@ -135,8 +135,8 @@ match selected_embedding:
             bidirectional=is_bidirectional,
             use_attention=is_attention,
         )
-        model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_glove_rsw{remove_stop_words}_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_gglove_rsw{remove_stop_words}_result.json"
+        model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_glove_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_glove_result.json"
 
 
     case EmbeddingType.BERT:
@@ -153,8 +153,8 @@ match selected_embedding:
             bidirectional=is_bidirectional,
             use_attention=is_attention,
         )
-        model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_bert_rsw{remove_stop_words}_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_bert_rsw{remove_stop_words}_result.json"
+        model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_bert_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_bert_result.json"
 
 lstm_model = LSTMModel(config).to(device=DEVICE)
 
