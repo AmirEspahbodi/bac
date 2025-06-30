@@ -4,7 +4,6 @@ from tqdm import tqdm
 from transformers import BertModel, BertTokenizer
 from torch.utils.data import DataLoader, TensorDataset
 from typing import Tuple, List
-from src.utils import clean_str
 
 # Ensure you have the necessary libraries installed:
 # pip install torch pandas tqdm transformers
@@ -26,7 +25,7 @@ def _create_full_sequence_embeddings(
     # Process texts in batches for significant speed improvement
     for i in tqdm(range(0, len(texts), batch_size), desc="Generating Full Embeddings"):
         # Select a batch of texts from the pandas Series
-        batch_texts = [clean_str(s) for s in texts.iloc[i:i + batch_size].tolist()]
+        batch_texts = texts.iloc[i:i + batch_size].tolist()
 
         # Tokenize the batch. The tokenizer handles truncation and padding for you.
         inputs = tokenizer(
