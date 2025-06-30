@@ -115,8 +115,7 @@ aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
 
 Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
 Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
-bi_s = '_bi' if is_bidirectional else ''
-att_s = "_a" if is_attention else ''
+
 
 # --- Model & Training Configuration ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -135,8 +134,8 @@ match selected_embedding:
             bidirectional=is_bidirectional,
             use_attention=is_attention,
         )
-        model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_glove_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_glove_result.json"
+        model_save_path = f"{os.getcwd()}/.models/lstm_glove_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/lstm_glove_result.json"
 
 
     case EmbeddingType.BERT:
@@ -153,8 +152,8 @@ match selected_embedding:
             bidirectional=is_bidirectional,
             use_attention=is_attention,
         )
-        model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_bert_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_bert_result.json"
+        model_save_path = f"{os.getcwd()}/.models/lstm_bert_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/lstm_bert_result.json"
 
 lstm_model = LSTMModel(config).to(device=DEVICE)
 
