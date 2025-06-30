@@ -25,8 +25,8 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "--embedding",
         "-e",
+        "--embedding",
         type=str,
         required=True,
         choices=[e.value for e in EmbeddingType],
@@ -35,8 +35,8 @@ def parse_arguments():
 
 
     parser.add_argument(
-        "--remove_stop_words",
         "-rsw",
+        "--remove_stop_words",
         type=int,
         default=0,
         required=False,
