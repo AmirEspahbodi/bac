@@ -34,16 +34,6 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "-b",
-        "--bidirectional",
-        default=False,
-        type=bool,
-        required=False,
-        choices=[False, True],
-        help="The type of word embedding to use.",
-    )
-
-    parser.add_argument(
         "-l",
         "--layers",
         default=1,
@@ -64,13 +54,30 @@ def parse_arguments():
     parser.add_argument(
         "-a",
         "--attention",
-        default=False,
-        type=bool,
+        default=0,
+        type=int,
         required=False,
-        choices=[False, True],
+        choices=[0, 1],
         help="The type of word embedding to use.",
     )
-
+    parser.add_argument(
+        "-b",
+        "--bidirectional",
+        default=0,
+        type=int,
+        required=False,
+        choices=[0, 1],
+        help="The type of word embedding to use.",
+    )
+    parser.add_argument(
+        "-r",
+        "--residual",
+        type=int,
+        default=0,
+        required=False,
+        choices=[0, 1],
+        help="residual connection.",
+    )
     parser.add_argument(
         "-rsw",
         "--remove_stop_words",
@@ -80,15 +87,7 @@ def parse_arguments():
         choices=[0, 1],
         help="remove stop words on tain dataset.",
     )
-    parser.add_argument(
-        "-r",
-        "--residual",
-        type=bool,
-        default=False,
-        required=False,
-        choices=[False, True],
-        help="residual connection.",
-    )
+
 
     return parser.parse_args()
 
