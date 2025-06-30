@@ -229,8 +229,8 @@ class LSTMModel(nn.Module):
         if self.layer_norm1 is not None:
             lstm_out = self.layer_norm1(lstm_out)
 
-        if self.layer_norm2 is not None:
-            hidden = self.layer_norm2(hidden)
+        # if self.layer_norm2 is not None:
+        #     hidden = self.layer_norm2(hidden)
             
         # Store hidden states for output
         hidden_states = lstm_out
