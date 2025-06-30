@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from .dataset import get_data_loaders
-from .models import LSTMModel
+from .models import LSTMModel, LSTMConfig, get_model_info
 from .utils import (
     train_one_epoch_m1,
     validation_epoch_fn,
@@ -44,6 +44,24 @@ def parse_arguments():
     )
 
     parser.add_argument(
+        "-l",
+        "--layers",
+        default=1,
+        type=int,
+        required=False,
+        help="Number of LSTM layers.",
+    )
+
+    parser.add_argument(
+        "-hs",
+        "--hidden_size",
+        default=128,
+        type=int,
+        required=False,
+        help="Dimention of hidden vector.",
+    )
+    
+    parser.add_argument(
         "-a",
         "--attention",
         default=0,
@@ -54,13 +72,22 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "--remove_stop_words",
         "-rsw",
+        "--remove_stop_words",
         type=int,
         default=0,
         required=False,
         choices=[0, 1],
         help="remove stop words on tain dataset.",
+    )
+    parser.add_argument(
+        "-r",
+        "--residual",
+        type=bool,
+        default=False,
+        required=False,
+        choices=[False, True],
+        help="residual connection.",
     )
 
     return parser.parse_args()
@@ -72,6 +99,10 @@ try:
     is_bidirectional = args.bidirectional
     is_attention = args.attention
     remove_stop_words = args.remove_stop_words
+    num_layers = args.layers
+    hidden_size_dim = args.hidden_size
+    residual = args.residual
+
 
 except argparse.ArgumentError as e:
     print(f"Error: {e}", file=sys.stderr)
@@ -81,59 +112,52 @@ aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
     selected_embedding
 )
 
+Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
+Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
+bi_s = '_bi' if is_bidirectional else ''
+att_s = "_a" if is_attention else ''
+
 # --- Model & Training Configuration ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 match selected_embedding:
     case EmbeddingType.GLOVE:
         print("using  GLOVE embeddings")
-
         NUM_EPOCHS = 7
-        GLOVE_EMBEDDING_DIM = 300
-        LSTM_HIDDEN_SIZE = 128 
-        LSTM_NUM_LAYERS = 2
-        LSTM_DROPOUT_RATE = 0.4
-        MAX_SEQ_LEN = 256
-        lstm_model = LSTMModel(
-                         input_size=GLOVE_EMBEDDING_DIM,
-                         hidden_size=LSTM_HIDDEN_SIZE,
-                         num_layers=LSTM_NUM_LAYERS,
-                         bidirectional=False if not is_bidirectional else True ,
-                         num_cls=NUM_ACTUAL_CLS,
-                         dropout_rate=LSTM_DROPOUT_RATE
-                         ).to(DEVICE)
-
-        bi_s = '_bi' if is_bidirectional else ''
-        att_s = "_a" if is_attention else ''
+        config = LSTMConfig(
+            hidden_size=hidden_size_dim,
+            num_layers=num_layers,
+            attention_heads=4,
+            dropout=0.4,
+            input_size = 768,
+            num_classes = NUM_ACTUAL_CLS,
+            residual_connections=residual,
+            bidirectional=is_bidirectional,
+            use_attention=is_attention,
+        )
         model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_glove_rsw{remove_stop_words}_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_gglove_rsw{remove_stop_words}_result.json"
-        Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
-        Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
+
 
     case EmbeddingType.BERT:
         print("using bert embeddings")
         NUM_EPOCHS = 7
-        EMBEDDING_DIM_VALUE = 768
-        LSTM_HIDDEN_SIZE = 256 
-        LSTM_NUM_LAYERS = 2
-        LSTM_DROPOUT_RATE = 0.4
-        MAX_SEQ_LEN = 256
-        lstm_model = LSTMModel(
-                         input_size=EMBEDDING_DIM_VALUE,
-                         hidden_size=LSTM_HIDDEN_SIZE,
-                         num_layers=LSTM_NUM_LAYERS,
-                         bidirectional=False if not is_bidirectional else True ,
-                         num_cls=NUM_ACTUAL_CLS,
-                         dropout_rate=LSTM_DROPOUT_RATE
-                         ).to(DEVICE)
-
-    
-        bi_s = '_bi' if is_bidirectional else ''
-        att_s = "_a" if is_attention else ''
-        
+        config = LSTMConfig(
+            hidden_size=hidden_size_dim,
+            num_layers=num_layers,
+            attention_heads=4,
+            dropout=0.4,
+            input_size = 300,
+            num_classes = NUM_ACTUAL_CLS,
+            residual_connections=residual,
+            use_attention=is_bidirectional,
+            use_attention=is_attention,
+        )
         model_save_path = f"{os.getcwd()}/.models/lstm{bi_s}{att_s}_bert_rsw{remove_stop_words}_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lstm{bi_s}{att_s}_bert_rsw{remove_stop_words}_result.json"
-        Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
-        Path(f"{os.getcwd()}/.result").mkdir(parents=True, exist_ok=True)
+
+lstm_model = LSTMModel(config)
+
+print(f"\n------\nlstm model info: \n{get_model_info(lstm_model)}\n------\n")
 
 LABEL_SMOOTHING_FACTOR = 0.1
 GRADIENT_CLIP_VALUE = 1.0
