@@ -56,11 +56,11 @@ def parse_arguments():
     parser.add_argument(
         "--remove_stop_words",
         "-rsw",
-        type=str,
+        type=int,
         default=0,
         required=False,
         choices=[0, 1],
-        help="The type of word embedding to use.",
+        help="remove stop words on tain dataset.",
     )
 
     return parser.parse_args()
