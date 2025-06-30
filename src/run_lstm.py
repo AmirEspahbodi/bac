@@ -101,6 +101,8 @@ try:
     num_layers = args.layers
     hidden_size_dim = args.hidden_size
     residual = args.residual
+    is_bidirectional =  True if is_bidirectional else False
+    is_attention =  True if is_attention else False
 
 
 except argparse.ArgumentError as e:
