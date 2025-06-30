@@ -88,7 +88,6 @@ def parse_arguments():
         help="remove stop words on tain dataset.",
     )
 
-
     return parser.parse_args()
 
 

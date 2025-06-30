@@ -179,20 +179,15 @@ class MultiHeadLuongAttention(nn.Module):
 
 
 class LSTMModel(nn.Module):
-    """
-    Advanced LSTM model with configurable bidirectional support and Luong attention
-    """
-    
     def __init__(self, config: LSTMConfig):
         super().__init__()
         self.config = config
         
-        # Input projection layer
         self.input_projection = nn.Linear(config.input_size, config.hidden_size)
         
         # LSTM layers
         self.lstm = nn.LSTM(
-            input_size=config.hidden_size,
+            input_size=config.input_size,
             hidden_size=config.hidden_size,
             num_layers=config.num_layers,
             dropout=config.dropout if config.num_layers > 1 else 0,
@@ -249,11 +244,11 @@ class LSTMModel(nn.Module):
         # inputs = inputs.permute(1, 0, 2)
         
         # Input projection
-        projected_inputs = self.input_projection(inputs)
-        projected_inputs = self.dropout(projected_inputs)
+        # projected_inputs = self.input_projection(inputs)
+        # projected_inputs = self.dropout(projected_inputs)
         
         # LSTM forward pass
-        lstm_out, (hidden, cell) = self.lstm(projected_inputs)
+        lstm_out, (hidden, cell) = self.lstm(inputs)
         
         # Apply layer normalization
         if self.layer_norm1 is not None:
