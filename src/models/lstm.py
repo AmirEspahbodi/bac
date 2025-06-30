@@ -291,7 +291,7 @@ class LSTMModel(nn.Module):
         else:
             # Use the final hidden state without attention
             if self.config.bidirectional:
-                final_representation = torch.cat(hidden[-2, :, :], hidden[-1, :, :], dim=1)
+                final_representation = torch.cat([hidden[-2], hidden[-1]], dim=1)
             else:
                 final_representation = hidden[-1, :, :]
                 
