@@ -85,6 +85,7 @@ def ensure_glove_zip_or_txt_file_is_present():
     )
     try:
         with zipfile.ZipFile(GLOVE_LOCAL_ZIP_PATH, "r") as zip_ref:
+            print(zip_ref.namelist())
             if GLOVE_FILE_NAME in zip_ref.namelist():
                 zip_ref.extract(
                     GLOVE_FILE_NAME, path=os.path.dirname(GLOVE_PATH) or "."
