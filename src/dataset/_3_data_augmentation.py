@@ -82,7 +82,7 @@ def contextual_data_augmentation(
     """
 
     save_path = Path(
-        f"datasets/{output_file.split('.')[0]}_{dataset_type.value}.{output_file.split('.')[1]}"
+        f"datasets/{output_file.split('.')[0]}_{dataset_type.value.upper()}.{output_file.split('.')[1]}"
     )
 
     # 1. Check if an augmented dataset already exists
