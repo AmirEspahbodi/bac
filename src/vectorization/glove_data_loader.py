@@ -46,7 +46,7 @@ GloveModel = Dict[str, np.ndarray]
 
 def load_glove_model(dimension: int = 300) -> GloveModel:
     # The cache directory is ~/.glove/
-    current_dir = os.getcwd()
+    current_dir = Path(os.getcwd())
     glove_cache_dir = current_dir / ".glove"
     
     # The specific text file we need, e.g., glove.6B.300d.txt
