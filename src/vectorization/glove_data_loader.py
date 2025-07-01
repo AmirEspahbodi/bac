@@ -34,16 +34,15 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-
 # --- GloVe File Handling ---
 def ensure_glove_file_is_present():
-    # print("ensure_glove_file_is_present 1, 1, 1, 1, 1, 1")
+    print("ensure_glove_file_is_present 1, 1, 1, 1, 1, 1")
     if os.path.exists(GLOVE_PATH):
         logging.info(f"Found existing GloVe text file: {GLOVE_PATH}")
         return True
-    # print("ensure_glove_file_is_present 2, 2, 2, 2, 2, 2")
+    print("ensure_glove_file_is_present 2, 2, 2, 2, 2, 2")
     if not os.path.exists(GLOVE_LOCAL_ZIP_PATH):
-        # print("ensure_glove_file_is_present 3, 3, 3, 3, 3, 3")
+        print("ensure_glove_file_is_present 3, 3, 3, 3, 3, 3")
         logging.info(
             f"GloVe zip file {GLOVE_LOCAL_ZIP_PATH} not found. Attempting to download from {GLOVE_ZIP_URL}..."
         )
@@ -67,13 +66,13 @@ def ensure_glove_file_is_present():
                     file.write(data)
             logging.info(f"Successfully downloaded {GLOVE_LOCAL_ZIP_PATH}")
         except requests.exceptions.RequestException as e:
-            # print("ensure_glove_file_is_present 4, 4, 4, 4, 4, 4")
+            print("ensure_glove_file_is_present 4, 4, 4, 4, 4, 4")
             logging.error(f"Error downloading GloVe zip file: {e}")
             if os.path.exists(GLOVE_LOCAL_ZIP_PATH):
                 os.remove(GLOVE_LOCAL_ZIP_PATH)
             return False
         except Exception as e:
-            # print("ensure_glove_file_is_present 5, 5, 5, 5, 5, 5")
+            print("ensure_glove_file_is_present 5, 5, 5, 5, 5, 5")
             logging.error(f"An unexpected error occurred during download: {e}")
             if os.path.exists(GLOVE_LOCAL_ZIP_PATH):
                 os.remove(GLOVE_LOCAL_ZIP_PATH)
@@ -101,16 +100,16 @@ def ensure_glove_file_is_present():
                 logging.info(f"Available files: {zip_ref.namelist()}")
                 return False
     except zipfile.BadZipFile as e:
-        # print(f"ensure_glove_file_is_present 6, 6, 6, 6, 6, 6. {e}")
+        print(f"ensure_glove_file_is_present 6, 6, 6, 6, 6, 6. {e}")
         logging.error(
-            f"Error: {GLOVE_LOCAL_ZIP_PATH} is a bad zip file. Please delete it and try again."
+            f"Error: {GLOVE_LOCAL_ZIP_PATH}/{GLOVE_LOCAL_ZIP_PATH} is a bad zip file. Please delete it and try again."
         )
         return False
     except Exception as e:
-        # print(f"ensure_glove_file_is_present 7, 7, 7, 7, 7, 7. {e}")
+        print(f"ensure_glove_file_is_present 7, 7, 7, 7, 7, 7. {e}")
         logging.error(f"An error occurred during extraction: {e}")
         return False
-    # print("ensure_glove_file_is_present 8, 8, 8, 8, 8, 8")
+    print("ensure_glove_file_is_present 8, 8, 8, 8, 8, 8")
 
 
 def load_glove_vectors(glove_path, embedding_dim):
@@ -143,12 +142,12 @@ def load_glove_vectors(glove_path, embedding_dim):
 
 
 def load_glove():
-    # print("load_glove 1, 1, 1, 1, 1, 1, 1")
+    print("load_glove 1, 1, 1, 1, 1, 1, 1")
     if not ensure_glove_file_is_present():
         logging.error("Could not obtain GloVe file. Exiting.")
         exit()
 
-    # print("load_glove 2, 2, 2, 2, 2, 2, 2")
+    print("load_glove 2, 2, 2, 2, 2, 2, 2")
 
     glove_vectors_map = load_glove_vectors(GLOVE_PATH, GLOVE_EMBEDDING_DIM)
 
@@ -244,11 +243,11 @@ def data_loaders_with_glove(
     This function initializes custom PyTorch Datasets for each data split and
     then uses a custom collate function to prepare batches with GloVe embeddings.
     """
-    # print("data_loaders_with_glove 1, 1, 1, 1, 1, 1")
+    print("data_loaders_with_glove 1, 1, 1, 1, 1, 1")
 
     vectors_map, unk_embedding = load_glove()
     
-    # print("data_loaders_with_glove 2, 2, 2, 2, 2, 2")
+    print("data_loaders_with_glove 2, 2, 2, 2, 2, 2")
 
     class TextDataset(Dataset):
         """
