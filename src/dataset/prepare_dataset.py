@@ -8,9 +8,9 @@ from src.vectorization import EmbeddingType
 from src.tokenization import get_bert_tokenizer
 
 
-def get_data_loaders(embedding_type:EmbeddingType, remove_stop_words=False):
+def get_data_loaders(dataset: DatasetType, embedding_type:EmbeddingType, remove_stop_words=False):
     dataset, NUM_ACTUAL_CLS = load_dataset(
-        DatasetType.GCC, dataset_rpath="./datasets/gcc_data.csv"
+        dataset
     )
     train_dataset, test_dataset, validation_dataset = slit_dataset(dataset)
     aug_train_dataset = contextual_word_replacement_augmentation(

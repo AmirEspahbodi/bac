@@ -29,17 +29,36 @@ def sun_perpocess():
     pass
 
 
-def load_dataset(dataset_type: DatasetType, dataset_rpath: str):
-    dataset_path = Path(os.getcwd()) / f"{dataset_rpath}"
+def load_dataset(dataset_type: DatasetType):
+    current_dir = Path(os.getcwd())
     try:
-        dataset = pd.read_csv(dataset_path)
+        match dataset_type:
+            case DatasetType.GCC:
+                dataset_rpath="./datasets/gcc_data.csv"
+                dataset_processor = gcc_perpocess
+            case DatasetType.JDT:
+                dataset_rpath="./datasets/jdt_data.csv"
+                dataset_processor = jdt_perpocess
+            case DatasetType.SUN:
+                dataset_rpath="./datasets/sun_data.csv"
+                dataset_processor = sun_perpocess
+            case DatasetType.CUSTOM:
+                raise NotImplementedError("not suported yet")
+            case _:
+                raise RuntimeError("wrong dataset") 
+        dataset = pd.read_csv(current_dir / f"{dataset_rpath}")
     except FileNotFoundError:
         logging.error(
-            f"Error: dataset {dataset_type.value} not found at '{dataset_path}' or in the current directory. Please place it correctly."
+            f"Error: dataset {dataset_type.value} not found at '{dataset_rpath}' or in the current directory. Please place it correctly."
         )
         exit()
 
-    gcc_perpocess(dataset)
+    try:
+        dataset_processor(dataset)
+    except Exception as e:
+        logging.error(
+            f"Error: error while processing dataset e: {e}."
+        )       
 
     # Drop rows with missing Assignee
     dataset.dropna(subset=["Assignee"], inplace=True)

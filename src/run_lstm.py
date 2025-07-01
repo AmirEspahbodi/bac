@@ -17,6 +17,7 @@ from .utils import (
     select_best_optimizer_lr,
 )
 from src.vectorization import EmbeddingType
+from src.dataset._dataset_types import DatasetType
 
 
 def parse_arguments():
@@ -24,6 +25,22 @@ def parse_arguments():
         description="Run a lstm model with a specified word embedding type."
     )
 
+    parser.add_argument(
+        "-d",
+        "--dataset",
+        type=str,
+        required=True,
+        choices=[e.value for e in DatasetType],
+        help="dataset type.",
+    )
+    parser.add_argument(
+        "-ne",
+        "--num_epochs",
+        type=str,
+        required=True,
+        choices=[e.value for e in DatasetType],
+        help="dataset type.",
+    )
     parser.add_argument(
         "-e",
         "--embedding",
@@ -111,6 +128,8 @@ try:
     is_bidirectional =  True if is_bidirectional else False
     is_attention =  True if is_attention else False
     num_attention_heads = args.num_attention_heads
+    dataset = args.dataset
+    NUM_EPOCHS = args.num_epochs
 
 
 except argparse.ArgumentError as e:
@@ -118,7 +137,7 @@ except argparse.ArgumentError as e:
     sys.exit(1)
 
 aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-    selected_embedding
+    dataset, selected_embedding
 )
 
 Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)
@@ -130,7 +149,6 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 match selected_embedding:
     case EmbeddingType.GLOVE:
         print("using  GLOVE embeddings")
-        NUM_EPOCHS = 7
         config = LSTMConfig(
             hidden_size=hidden_size_dim,
             num_layers=num_layers,
@@ -148,7 +166,6 @@ match selected_embedding:
 
     case EmbeddingType.BERT:
         print("using bert embeddings")
-        NUM_EPOCHS = 7
         config = LSTMConfig(
             hidden_size=hidden_size_dim,
             num_layers=num_layers,

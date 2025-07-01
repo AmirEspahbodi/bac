@@ -256,7 +256,7 @@ class LSTMModel(nn.Module):
             # Apply layer normalization and residual connection
             if self.config.residual_connections:
                 context = context + query
-                
+
             if self.layer_norm2 is not None:
                 context = self.layer_norm2(context)
                 
