@@ -100,7 +100,7 @@ def ensure_glove_file_is_present():
                 logging.info(f"Available files: {zip_ref.namelist()}")
                 return False
     except zipfile.BadZipFile as e:
-        print(f"ensure_glove_file_is_present 6, 6, 6, 6, 6, 6. {e}")
+        print(f"ensure_glove_file_is_present 6, 6, 6, 6, 6, 6. {GLOVE_LOCAL_ZIP_PATH}/{GLOVE_FILE_NAME} {e}")
         logging.error(
             f"Error: {GLOVE_LOCAL_ZIP_PATH}/{GLOVE_FILE_NAME} is a bad zip file. Please delete it and try again."
         )
