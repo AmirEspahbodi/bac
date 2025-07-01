@@ -46,8 +46,8 @@ GloveModel = Dict[str, np.ndarray]
 
 def load_glove_model(dimension: int = 300) -> GloveModel:
     # The cache directory is ~/.glove/
-    home_dir = Path.home()
-    glove_cache_dir = home_dir / ".glove"
+    current_dir = os.getcwd()
+    glove_cache_dir = current_dir / ".glove"
     
     # The specific text file we need, e.g., glove.6B.300d.txt
     glove_filename = f"glove.6B.{dimension}d.txt"
@@ -209,11 +209,8 @@ def data_loaders_with_glove(
     This function initializes custom PyTorch Datasets for each data split and
     then uses a custom collate function to prepare batches with GloVe embeddings.
     """
-    print("data_loaders_with_glove 1, 1, 1, 1, 1, 1")
 
     vectors_map, unk_embedding = load_glove()
-    
-    print("data_loaders_with_glove 2, 2, 2, 2, 2, 2")
 
     class TextDataset(Dataset):
         """
