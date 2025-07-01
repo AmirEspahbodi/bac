@@ -78,8 +78,6 @@ def ensure_glove_file_is_present():
             return False
     else:
         logging.info(f"Found existing GloVe zip file: {GLOVE_LOCAL_ZIP_PATH}")
-    print("ensure_glove_file_is_present 2, 2, 2, 2, 2, 2")
-    print("ensure_glove_file_is_present 6, 6, 6, 6, 6, 6")
 
     logging.info(
         f"Attempting to extract {GLOVE_FILE_NAME} from {GLOVE_LOCAL_ZIP_PATH}..."
@@ -101,13 +99,16 @@ def ensure_glove_file_is_present():
                 logging.info(f"Available files: {zip_ref.namelist()}")
                 return False
     except zipfile.BadZipFile:
+        print("ensure_glove_file_is_present 6, 6, 6, 6, 6, 6")
         logging.error(
             f"Error: {GLOVE_LOCAL_ZIP_PATH} is a bad zip file. Please delete it and try again."
         )
         return False
     except Exception as e:
+        print("ensure_glove_file_is_present 7, 7, 7, 7, 7, 7")
         logging.error(f"An error occurred during extraction: {e}")
         return False
+    print("ensure_glove_file_is_present 8, 8, 8, 8, 8, 8")
 
 
 def load_glove_vectors(glove_path, embedding_dim):
