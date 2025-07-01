@@ -102,7 +102,7 @@ def ensure_glove_file_is_present():
     except zipfile.BadZipFile as e:
         print(f"ensure_glove_file_is_present 6, 6, 6, 6, 6, 6. {e}")
         logging.error(
-            f"Error: {GLOVE_LOCAL_ZIP_PATH}/{GLOVE_LOCAL_ZIP_PATH} is a bad zip file. Please delete it and try again."
+            f"Error: {GLOVE_LOCAL_ZIP_PATH}/{GLOVE_FILE_NAME} is a bad zip file. Please delete it and try again."
         )
         return False
     except Exception as e:
