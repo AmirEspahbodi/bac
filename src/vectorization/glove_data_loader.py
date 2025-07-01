@@ -99,13 +99,13 @@ def ensure_glove_file_is_present():
                 logging.info(f"Available files: {zip_ref.namelist()}")
                 return False
     except zipfile.BadZipFile:
-        print("ensure_glove_file_is_present 6, 6, 6, 6, 6, 6")
+        print(f"ensure_glove_file_is_present 6, 6, 6, 6, 6, 6. {e}")
         logging.error(
             f"Error: {GLOVE_LOCAL_ZIP_PATH} is a bad zip file. Please delete it and try again."
         )
         return False
     except Exception as e:
-        print("ensure_glove_file_is_present 7, 7, 7, 7, 7, 7")
+        print(f"ensure_glove_file_is_present 7, 7, 7, 7, 7, 7. {e}")
         logging.error(f"An error occurred during extraction: {e}")
         return False
     print("ensure_glove_file_is_present 8, 8, 8, 8, 8, 8")
