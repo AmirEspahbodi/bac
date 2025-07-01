@@ -84,7 +84,9 @@ def ensure_glove_zip_or_txt_file_is_present():
         f"Attempting to extract {GLOVE_FILE_NAME} from {GLOVE_LOCAL_ZIP_PATH}..."
     )
     try:
+        print(f"ensure_glove_zip_or_txt_file_is_present 6, 6, 6, 6, 6, 6. {os.getcwd()}/{GLOVE_LOCAL_ZIP_PATH}")
         with zipfile.ZipFile(GLOVE_LOCAL_ZIP_PATH, "r") as zip_ref:
+            print(f"ensure_glove_zip_or_txt_file_is_present 7, 7, 7, 7, 7, 7. {os.getcwd()}/{GLOVE_LOCAL_ZIP_PATH}")
             print(zip_ref.namelist())
             if GLOVE_FILE_NAME in zip_ref.namelist():
                 zip_ref.extract(
@@ -95,22 +97,23 @@ def ensure_glove_zip_or_txt_file_is_present():
                 )
                 return True
             else:
+                print(f"ensure_glove_zip_or_txt_file_is_present 7, 7, 7, 7, 7, 7. Error: {GLOVE_FILE_NAME} not found inside {GLOVE_LOCAL_ZIP_PATH}.")
                 logging.error(
                     f"Error: {GLOVE_FILE_NAME} not found inside {GLOVE_LOCAL_ZIP_PATH}."
                 )
                 logging.info(f"Available files: {zip_ref.namelist()}")
                 return False
     except zipfile.BadZipFile as e:
-        print(f"ensure_glove_zip_or_txt_file_is_present 6, 6, 6, 6, 6, 6. {GLOVE_LOCAL_ZIP_PATH} {e}")
+        print(f"ensure_glove_zip_or_txt_file_is_present 8, 8, 8, 8, 8, 8. {GLOVE_LOCAL_ZIP_PATH} {e}")
         logging.error(
             f"Error: {GLOVE_DIR}/{GLOVE_FILE_NAME} is a bad zip file. Please delete it and try again."
         )
         return False
     except Exception as e:
-        print(f"ensure_glove_zip_or_txt_file_is_present 7, 7, 7, 7, 7, 7. {e}")
+        print(f"ensure_glove_zip_or_txt_file_is_present 8, 8, 8, 8, 8, 8. {e}")
         logging.error(f"An error occurred during extraction: {e}")
         return False
-    print("ensure_glove_zip_or_txt_file_is_present 8, 8, 8, 8, 8, 8")
+    print("ensure_glove_zip_or_txt_file_is_present 9, 9, 9, 9, 9, 9")
 
 
 def load_glove_vectors(glove_path, embedding_dim):
