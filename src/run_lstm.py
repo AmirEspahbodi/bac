@@ -37,7 +37,7 @@ def parse_arguments():
         "--num_epochs",
         type=int,
         required=True,
-        choices=[range(0, 20)],
+        choices=[*range(0, 20)],
         help="dataset type.",
     )
     parser.add_argument(
