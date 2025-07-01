@@ -24,7 +24,6 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Run a lstm model with a specified word embedding type."
     )
-
     parser.add_argument(
         "-d",
         "--dataset",
@@ -137,7 +136,7 @@ except argparse.ArgumentError as e:
     sys.exit(1)
 
 aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-    dataset, selected_embedding
+    dataset, selected_embedding, remove_stop_words=remove_stop_words
 )
 
 Path(f"{os.getcwd()}/.models").mkdir(parents=True, exist_ok=True)

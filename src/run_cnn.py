@@ -17,13 +17,30 @@ from .utils import (
     select_best_optimizer_lr,
 )
 from src.vectorization import EmbeddingType
+from src.dataset._dataset_types import DatasetType
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Run a CNN model with a specified word embedding type."
     )
-
+    parser.add_argument(
+        "-d",
+        "--dataset",
+        type=str,
+        required=True,
+        choices=[e.value for e in DatasetType],
+        help="dataset type.",
+    )
+    parser.add_argument(
+        "-ne",
+        "--num_epochs",
+        type=str,
+        required=True,
+        choices=[e.value for e in DatasetType],
+        help="dataset type.",
+    )
+    
     parser.add_argument(
         "-e",
         "--embedding",
@@ -51,13 +68,15 @@ try:
     args = parse_arguments()
     selected_embedding = EmbeddingType(args.embedding)
     remove_stop_words = args.remove_stop_words
+    dataset = args.dataset
+    NUM_EPOCHS = args.num_epochs
 
 except argparse.ArgumentError as e:
     print(f"Error: {e}", file=sys.stderr)
     sys.exit(1)
 
 aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS = get_data_loaders(
-    selected_embedding, remove_stop_words
+    dataset, selected_embedding, remove_stop_words
 )
 
 # --- Model & Training Configuration ---
@@ -65,7 +84,6 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 match selected_embedding:
     case EmbeddingType.GLOVE:
         print("using  GLOVE embeddings")
-        NUM_EPOCHS = 7
         EMBEDDING_DIM_VALUE = 300
         N_FILTERS_LIST = [256, 256, 256]
         FILTER_SIZES_LIST = [3, 4, 5]
@@ -105,7 +123,6 @@ match selected_embedding:
         #     hidden_dim_fc2=HIDDEN_DIM_FC2_VALUE,
         # ).to(DEVICE)
         # BATCH_SIZE = 32
-        NUM_EPOCHS = 7
         EMBEDDING_DIM_VALUE = 768
         N_FILTERS_LIST = [256, 256, 256]
         FILTER_SIZES_LIST = [3, 4, 5]
@@ -134,10 +151,7 @@ GRADIENT_CLIP_VALUE = 1.0
 PATIENCE = 5
 MIN_DELTA = 0.0001
 
-
-
 loss_fn = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING_FACTOR)
-
 
 selected_optimizer_class, selected_lr = select_best_optimizer_lr(
     1,
