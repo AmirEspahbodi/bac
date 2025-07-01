@@ -16,17 +16,17 @@ def gcc_perpocess(dataset: pd.DataFrame):
     temp = []
     for i in range(len(dataset["Summary"])):
         temp.append(
-            f"Summary = {dataset['Summary'].iloc[i]} | Description = {dataset['Description'].iloc[i]}"
+            f"{dataset['Summary'].iloc[i]} {dataset['Description'].iloc[i]}"
         )
     dataset["text_input"] = temp
 
 
-def jdt_perpocess():
-    pass
+def jdt_perpocess(dataset: pd.DataFrame):
+    dataset["text_input"] = dataset["Description"].fillna("").astype(str)
 
 
-def sun_perpocess():
-    pass
+def sun_perpocess(dataset: pd.DataFrame):
+    dataset["text_input"] = dataset["Description"].fillna("").astype(str)
 
 
 def load_dataset(dataset_type: DatasetType):
