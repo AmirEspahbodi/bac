@@ -33,87 +33,115 @@ Path(f"{os.getcwd()}/{GLOVE_DIR}").mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
+import os
+import zipfile
+import requests
+import numpy as np
+from pathlib import Path
+from tqdm import tqdm
+from typing import Dict, Union
 
-# --- GloVe File Handling ---
-def ensure_glove_zip_or_txt_file_is_present():
-    print("ensure_glove_zip_or_txt_file_is_present 1, 1, 1, 1, 1, 1")
-    if os.path.exists(GLOVE_PATH):
-        logging.info(f"Found existing GloVe text file: {GLOVE_PATH}")
-        return True
-    print("ensure_glove_zip_or_txt_file_is_present 2, 2, 2, 2, 2, 2")
-    if not os.path.exists(GLOVE_LOCAL_ZIP_PATH):
-        print("ensure_glove_zip_or_txt_file_is_present 3, 3, 3, 3, 3, 3")
-        logging.info(
-            f"GloVe zip file {GLOVE_LOCAL_ZIP_PATH} not found. Attempting to download from {GLOVE_ZIP_URL}..."
-        )
-        try:
-            response = requests.get(GLOVE_ZIP_URL, stream=True, verify=False)
-            response.raise_for_status()
-            total_size_in_bytes = int(response.headers.get("content-length", 0))
-            block_size = 1024
-            with (
-                open(GLOVE_LOCAL_ZIP_PATH, "wb") as file,
-                tqdm(
-                    desc=f"Downloading {os.path.basename(GLOVE_ZIP_URL)}",
-                    total=total_size_in_bytes,
-                    unit="iB",
-                    unit_scale=True,
-                    unit_divisor=1024,
-                ) as bar,
-            ):
-                for data in response.iter_content(block_size):
-                    bar.update(len(data))
-                    file.write(data)
-            logging.info(f"Successfully downloaded {GLOVE_LOCAL_ZIP_PATH}")
-        except requests.exceptions.RequestException as e:
-            print("ensure_glove_zip_or_txt_file_is_present 4, 4, 4, 4, 4, 4")
-            logging.error(f"Error downloading GloVe zip file: {e}")
-            if os.path.exists(GLOVE_LOCAL_ZIP_PATH):
-                os.remove(GLOVE_LOCAL_ZIP_PATH)
-            return False
-        except Exception as e:
-            print("ensure_glove_zip_or_txt_file_is_present 5, 5, 5, 5, 5, 5")
-            logging.error(f"An unexpected error occurred during download: {e}")
-            if os.path.exists(GLOVE_LOCAL_ZIP_PATH):
-                os.remove(GLOVE_LOCAL_ZIP_PATH)
-            return False
-    else:
-        logging.info(f"Found existing GloVe zip file: {GLOVE_LOCAL_ZIP_PATH}")
+# Define a type hint for the model for clarity
+GloveModel = Dict[str, np.ndarray]
 
-    logging.info(
-        f"Attempting to extract {GLOVE_FILE_NAME} from {GLOVE_LOCAL_ZIP_PATH}..."
-    )
+def load_glove_model(dimension: int = 300) -> GloveModel:
+    # The cache directory is ~/.glove/
+    home_dir = Path.home()
+    glove_cache_dir = home_dir / ".glove"
+    
+    # The specific text file we need, e.g., glove.6B.300d.txt
+    glove_filename = f"glove.6B.{dimension}d.txt"
+    glove_txt_path = glove_cache_dir / glove_filename
+    
+    # The zip file that contains all dimensions
+    glove_zip_filename = "glove.6B.zip"
+    glove_zip_path = glove_cache_dir / glove_zip_filename
+    
+    # The URL for downloading
+    glove_url = "http://nlp.stanford.edu/data/glove.6B.zip"
+
+    # --- 2. Check if the final embedding file exists ---
+    if glove_txt_path.exists():
+        print(f"Found existing GloVe file: '{glove_txt_path}'. Loading into memory.")
+        return _load_from_txt(glove_txt_path)
+
+    print(f"GloVe file not found at '{glove_txt_path}'.")
+
+    # --- 3. Ensure the cache directory exists ---
+    # This is idempotent; it won't raise an error if the directory already exists.
     try:
-        print(f"ensure_glove_zip_or_txt_file_is_present 6, 6, 6, 6, 6, 6. {os.getcwd()}/{GLOVE_LOCAL_ZIP_PATH}")
-        with zipfile.ZipFile(GLOVE_LOCAL_ZIP_PATH, "r") as zip_ref:
-            print(f"ensure_glove_zip_or_txt_file_is_present 7, 7, 7, 7, 7, 7. {os.getcwd()}/{GLOVE_LOCAL_ZIP_PATH}")
-            print(zip_ref.namelist())
-            if GLOVE_FILE_NAME in zip_ref.namelist():
-                zip_ref.extract(
-                    GLOVE_FILE_NAME, path=os.path.dirname(GLOVE_PATH) or "."
-                )
-                logging.info(
-                    f"Successfully extracted {GLOVE_FILE_NAME} to {GLOVE_PATH}"
-                )
-                return True
-            else:
-                print(f"ensure_glove_zip_or_txt_file_is_present 7, 7, 7, 7, 7, 7. Error: {GLOVE_FILE_NAME} not found inside {GLOVE_LOCAL_ZIP_PATH}.")
-                logging.error(
-                    f"Error: {GLOVE_FILE_NAME} not found inside {GLOVE_LOCAL_ZIP_PATH}."
-                )
-                logging.info(f"Available files: {zip_ref.namelist()}")
-                return False
+        glove_cache_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Ensured cache directory exists: '{glove_cache_dir}'")
+    except OSError as e:
+        print(f"Error: Could not create directory {glove_cache_dir}. Check permissions.")
+        raise IOError(f"Failed to create cache directory: {e}") from e
+
+    # --- 4. Download if the ZIP file doesn't exist ---
+    if not glove_zip_path.exists():
+        print(f"ZIP archive not found. Downloading from '{glove_url}'...")
+        _download_glove(glove_url, glove_zip_path)
+    else:
+        print(f"Found existing ZIP archive: '{glove_zip_path}'.")
+
+    # --- 5. Extract the ZIP file ---
+    print(f"Extracting '{glove_zip_filename}'...")
+    try:
+        with zipfile.ZipFile(glove_zip_path, 'r') as zip_ref:
+            # Extract all contents to the cache directory
+            zip_ref.extractall(glove_cache_dir)
+        print("Extraction complete.")
     except zipfile.BadZipFile as e:
-        print(f"ensure_glove_zip_or_txt_file_is_present 8, 8, 8, 8, 8, 8. {GLOVE_LOCAL_ZIP_PATH} {e}")
-        logging.error(
-            f"Error: {GLOVE_DIR}/{GLOVE_FILE_NAME} is a bad zip file. Please delete it and try again."
-        )
-        return False
+        print(f"Error: The downloaded file '{glove_zip_path}' is not a valid ZIP file or is corrupted.")
+        print("Please delete the file and try again.")
+        raise IOError(f"Bad ZIP file: {e}") from e
     except Exception as e:
-        print(f"ensure_glove_zip_or_txt_file_is_present 8, 8, 8, 8, 8, 8. {e}")
-        logging.error(f"An error occurred during extraction: {e}")
-        return False
-    print("ensure_glove_zip_or_txt_file_is_present 9, 9, 9, 9, 9, 9")
+        print(f"An unexpected error occurred during extraction: {e}")
+        raise
+
+    # --- 6. Verify extraction and load the model ---
+    if not glove_txt_path.exists():
+        # This is an important edge case check.
+        print(f"Error: Extraction finished, but the required file '{glove_filename}' was not found.")
+        raise FileNotFoundError(f"Could not find '{glove_filename}' in the extracted archive.")
+
+    print(f"File is now available at '{glove_txt_path}'. Loading into memory.")
+    return glove_txt_path
+
+
+def _download_glove(url: str, destination_path: Path):
+    """Helper function to download a file with a progress bar."""
+    try:
+        # Use streaming to handle large files efficiently
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+            
+            total_size_in_bytes = int(r.headers.get('content-length', 0))
+            block_size = 1024  # 1 Kibibyte
+
+            progress_bar = tqdm(
+                total=total_size_in_bytes,
+                unit='iB',
+                unit_scale=True,
+                desc=destination_path.name
+            )
+            
+            with open(destination_path, 'wb') as f:
+                for chunk in r.iter_content(block_size):
+                    progress_bar.update(len(chunk))
+                    f.write(chunk)
+            
+            progress_bar.close()
+
+            if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
+                print("Error: Download was incomplete.")
+                raise IOError("Mismatch in downloaded file size.")
+                
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading file: {e}")
+        # Clean up partially downloaded file if it exists
+        if destination_path.exists():
+            os.remove(destination_path)
+        raise
 
 
 def load_glove_vectors(glove_path, embedding_dim):
@@ -146,14 +174,9 @@ def load_glove_vectors(glove_path, embedding_dim):
 
 
 def load_glove():
-    print("load_glove 1, 1, 1, 1, 1, 1, 1")
-    if not ensure_glove_zip_or_txt_file_is_present():
-        logging.error("Could not obtain GloVe file. Exiting.")
-        exit()
+    glove_txt_path = load_glove_model()
 
-    print("load_glove 2, 2, 2, 2, 2, 2, 2")
-
-    glove_vectors_map = load_glove_vectors(GLOVE_PATH, GLOVE_EMBEDDING_DIM)
+    glove_vectors_map = load_glove_vectors(glove_txt_path, GLOVE_EMBEDDING_DIM)
 
     unk_embedding = np.random.rand(GLOVE_EMBEDDING_DIM).astype(
         "float32"
@@ -167,70 +190,9 @@ def load_glove():
         logging.warning(
             "GloVe vectors map is empty or not loaded. Using random UNK embedding. Training will be affected."
         )
-        # exit() # Critical error, might be best to exit
+        exit()
     return glove_vectors_map, unk_embedding
 
-## get data loaders first method
-
-# def collate_with_glove(batch, hf_tokenizer, glove_word_vectors, embedding_dimension, unk_word_embedding, max_seq_len):
-#     labels_list_from_batch = [item['label'] for item in batch]
-#     texts_list_from_batch = [item['text'] for item in batch]
-#     labels_tensor = torch.LongTensor(labels_list_from_batch)
-#     all_sequences_as_vecs = []
-#     for text_item in texts_list_from_batch:
-#         string_tokens = hf_tokenizer.tokenize(str(text_item))[:max_seq_len] 
-#         if not string_tokens:
-#             all_sequences_as_vecs.append(torch.tensor(unk_word_embedding, dtype=torch.float).unsqueeze(0))
-#             continue
-#         current_sequence_embeddings = [torch.tensor(glove_word_vectors.get(token_str, unk_word_embedding), dtype=torch.float) for token_str in string_tokens]
-#         if not current_sequence_embeddings:
-#             all_sequences_as_vecs.append(torch.tensor(unk_word_embedding, dtype=torch.float).unsqueeze(0))
-#         else:
-#             all_sequences_as_vecs.append(torch.stack(current_sequence_embeddings))
-#     vecs_padded = pad_sequence(all_sequences_as_vecs, batch_first=False, padding_value=0.0)
-#     return vecs_padded, labels_tensor
-
-# def data_loaders_with_glove(
-#     train_dataset: pd.DataFrame,
-#     test_dataset: pd.DataFrame,
-#     validation_dataset: pd.DataFrame,
-#     bert_tokenizer: BertTokenizer,
-#     batch_size: int = 32,
-#     max_seq_len = 512
-    
-# ):
-#     def create_data_list(texts_list, labels_list):
-#         return [{'text': text, 'label': label} for text, label in zip(texts_list, labels_list)]
-
-#     train_texts = train_dataset['text_input'].tolist()
-#     train_labels = train_dataset['assignee_encoded'].tolist()
-
-#     validation_texts = validation_dataset['text_input'].tolist()
-#     validation_labels = validation_dataset['assignee_encoded'].tolist()
-
-#     test_texts = test_dataset['text_input'].tolist()
-#     test_labels = test_dataset['assignee_encoded'].tolist()
-
-
-#     train_data_list = create_data_list(train_texts, train_labels)
-#     validation_data_list = create_data_list(validation_texts, validation_labels)
-#     test_data_list = create_data_list(test_texts, test_labels)
-    
-#     vectors_map, unk_embedding = load_glove()
-
-#     collate_fn_custom = partial(collate_with_glove,
-#                                 hf_tokenizer=bert_tokenizer,
-#                                 glove_word_vectors=vectors_map,
-#                                 embedding_dimension=GLOVE_EMBEDDING_DIM,
-#                                 unk_word_embedding=unk_embedding,
-#                                 max_seq_len=max_seq_len)
-#     train_loader = DataLoader(train_data_list, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_custom, num_workers=0)
-#     validation_loader = DataLoader(validation_data_list, batch_size=batch_size, collate_fn=collate_fn_custom, num_workers=0)
-#     test_loader = DataLoader(test_data_list, batch_size=batch_size, collate_fn=collate_fn_custom, num_workers=0)
-
-#     return train_loader, validation_loader, test_loader
-
-## get data loaders second method
 
 
 def data_loaders_with_glove(
