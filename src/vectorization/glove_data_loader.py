@@ -63,7 +63,7 @@ def load_glove_model(dimension: int = 300) -> GloveModel:
     # --- 2. Check if the final embedding file exists ---
     if glove_txt_path.exists():
         print(f"Found existing GloVe file: '{glove_txt_path}'. Loading into memory.")
-        return _load_from_txt(glove_txt_path)
+        return glove_txt_path
 
     print(f"GloVe file not found at '{glove_txt_path}'.")
 
