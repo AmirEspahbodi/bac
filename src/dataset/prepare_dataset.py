@@ -8,13 +8,13 @@ from src.vectorization import EmbeddingType
 from src.tokenization import get_bert_tokenizer
 
 
-def get_data_loaders(dataset: DatasetType, embedding_type:EmbeddingType, remove_stop_words=False):
+def get_data_loaders(dataset_type: DatasetType, embedding_type:EmbeddingType, remove_stop_words=False):
     dataset, NUM_ACTUAL_CLS = load_dataset(
-        dataset
+        dataset_type
     )
     train_dataset, test_dataset, validation_dataset = slit_dataset(dataset)
     aug_train_dataset = contextual_word_replacement_augmentation(
-        train_dataset, dataset
+        train_dataset, dataset_type
     )
     bert_tokenizer = get_bert_tokenizer()
     
