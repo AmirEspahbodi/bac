@@ -14,7 +14,7 @@ def get_data_loaders(dataset: DatasetType, embedding_type:EmbeddingType, remove_
     )
     train_dataset, test_dataset, validation_dataset = slit_dataset(dataset)
     aug_train_dataset = contextual_word_replacement_augmentation(
-        train_dataset, DatasetType.GCC
+        train_dataset, dataset
     )
     bert_tokenizer = get_bert_tokenizer()
     
