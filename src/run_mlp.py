@@ -76,22 +76,25 @@ aug_train_loader, val_loader, test_loader, NUM_LABELS = get_data_loaders(
 
 print(selected_embedding)
 
-if EmbeddingType.GLOVE == selected_embedding:
-    aug_train_loader = single_vector_glove_dataloader(aug_train_loader)
-    val_loader = single_vector_glove_dataloader(val_loader)
-    test_loader = single_vector_glove_dataloader(test_loader)
+match selected_embedding:
+    case EmbeddingType.GLOVE:
+        aug_train_loader = single_vector_glove_dataloader(aug_train_loader)
+        val_loader = single_vector_glove_dataloader(val_loader)
+        test_loader = single_vector_glove_dataloader(test_loader)
+        BERT_DIM = 300
+        HIDDEN_DIM = 128
+        NUM_BLOCKS = 4
+        DROPOUT = 0.2
+    case EmbeddingType.BERT_CLS:
+        BERT_DIM = 768
+        HIDDEN_DIM = 512
+        NUM_BLOCKS = 4
+        DROPOUT = 0.2
 
 
-BERT_DIM = 768
 BATCH_SIZE = 32
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-HIDDEN_DIM = 512
-NUM_BLOCKS = 4
-DROPOUT = 0.2
-LEARNING_RATE = 1e-3
-EPOCHS = 30
-WEIGHT_DECAY = 1e-2
 LABEL_SMOOTHING = 0.1
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 LABEL_SMOOTHING_FACTOR = 0.1
@@ -119,7 +122,7 @@ mlp_model = MLPClassifier(
     output_dim=NUM_LABELS, 
     num_blocks=NUM_BLOCKS, 
     dropout_rate=DROPOUT
-)
+).to(DEVICE)
 
 loss_fn = LabelSmoothingCrossEntropy(smoothing=LABEL_SMOOTHING_FACTOR)
 

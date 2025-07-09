@@ -34,7 +34,7 @@ def get_cls_embedding(
         return torch.zeros(model.config.hidden_size, device=device)
 
     max_chunk_len = max(len(c) for c in chunks)
-    
+
     input_ids = torch.tensor([c + [tokenizer.pad_token_id] * (max_chunk_len - len(c)) for c in chunks], device=device)
     attention_mask = torch.ones_like(input_ids)
     attention_mask[input_ids == tokenizer.pad_token_id] = 0
@@ -58,8 +58,8 @@ def get_data_loaders_bert_cls(
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"✅ Using device: {DEVICE}")
-    
-    bert_model_name: str = 'bert-large-uncased',
+
+    bert_model_name: str = 'bert-large-uncased'
     print(f"🚀 Loading pre-trained BERT model: '{bert_model_name}'")
     model = BertModel.from_pretrained(bert_model_name).to(DEVICE)
     model.eval()
