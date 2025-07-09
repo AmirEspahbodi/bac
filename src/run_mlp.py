@@ -190,8 +190,8 @@ for epoch in range(NUM_EPOCHS):
     )
 
     # --- Train for one epoch ---
-    lstm_model, loss_train, acc_train = train_one_epoch_m1(
-        lstm_model,
+    mlp_model, loss_train, acc_train = train_one_epoch_m1(
+        mlp_model,
         aug_train_loader,
         loss_fn,
         optimizer,
@@ -202,7 +202,7 @@ for epoch in range(NUM_EPOCHS):
 
     # --- Validate for one epoch ---
     current_val_loss, current_val_acc, _, _ = validation_epoch_fn(
-        lstm_model, val_loader, loss_fn, DEVICE, description=f"Validation {epoch + 1}"
+        mlp_model, val_loader, loss_fn, DEVICE, description=f"Validation {epoch + 1}"
     )
 
     # --- Update history ---
@@ -218,7 +218,7 @@ for epoch in range(NUM_EPOCHS):
     if current_val_loss < best_val_loss - MIN_DELTA:
         best_val_loss = current_val_loss
         epochs_no_improve = 0
-        best_model_state = copy.deepcopy(lstm_model.state_dict())
+        best_model_state = copy.deepcopy(mlp_model.state_dict())
         print(f"\t✨ New best validation loss: {best_val_loss:.4f}")
     else:
         epochs_no_improve += 1
@@ -238,8 +238,8 @@ for epoch in range(NUM_EPOCHS):
 
 
 if best_model_state:
-    lstm_model.load_state_dict(best_model_state)
-    torch.save(lstm_model, model_save_path)
+    mlp_model.load_state_dict(best_model_state)
+    torch.save(mlp_model, model_save_path)
     print("\n✅ Loaded best model based on validation accuracy for final testing.")
 else:
     print("\n⚠️ No improvement observed. Using model from the last epoch for testing.")
@@ -277,7 +277,7 @@ test_loss_final, test_acc_top1_final, test_mrr_final, _ = (
     test_acc_top1_final,
     test_mrr_final,
     _,
-) = validation_epoch_fn(lstm_model, test_loader, loss_fn, DEVICE, description=f"Testing")
+) = validation_epoch_fn(mlp_model, test_loader, loss_fn, DEVICE, description=f"Testing")
 
 print(f"\n--- Test Set Results (Best Validation Model) ---")
 print(f"\tTest Loss: {test_loss_final:.4f}")
@@ -288,10 +288,10 @@ print(f"\tTest MRR: {test_mrr_final:.4f}")
 k_values_for_test = [5, 10]
 
 _, _, _, test_top_5_acc = validation_epoch_fn(
-    lstm_model, test_loader, loss_fn, DEVICE, f"Testing (Top-{5})", k_for_top_k_eval=5
+    mlp_model, test_loader, loss_fn, DEVICE, f"Testing (Top-{5})", k_for_top_k_eval=5
 )
 _, _, _, test_top_10_acc = validation_epoch_fn(
-    lstm_model, test_loader, loss_fn, DEVICE, f"Testing (Top-{10})", k_for_top_k_eval=10
+    mlp_model, test_loader, loss_fn, DEVICE, f"Testing (Top-{10})", k_for_top_k_eval=10
 )
 
 result = {
