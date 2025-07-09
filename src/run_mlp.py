@@ -13,6 +13,7 @@ from .utils import (
     train_one_epoch_m1,
     validation_epoch_fn,
     select_best_optimizer_lr,
+    single_vector_glove_dataloader
 )
 
 def parse_arguments():
@@ -73,10 +74,12 @@ aug_train_loader, val_loader, test_loader, NUM_LABELS = get_data_loaders(
     dataset, selected_embedding, remove_stop_words
 )
 
-if EmbeddingType.GLOVE == dataset:
-    print(f"aug_train_loader.shape = {aug_train_loader.shape}")
-    print(f"val_loader.shape = {val_loader.shape}")
-    print(f"test_loader.shape = {test_loader.shape}")
+print(selected_embedding)
+
+if EmbeddingType.GLOVE == selected_embedding:
+    aug_train_loader = single_vector_glove_dataloader(aug_train_loader)
+    val_loader = single_vector_glove_dataloader(val_loader)
+    test_loader = single_vector_glove_dataloader(test_loader)
 
 
 BERT_DIM = 768
