@@ -59,7 +59,7 @@ def get_data_loaders_bert_cls(
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"✅ Using device: {DEVICE}")
 
-    bert_model_name: str = 'bert-large-uncased'
+    bert_model_name: str = 'bert-base-uncased'
     print(f"🚀 Loading pre-trained BERT model: '{bert_model_name}'")
     model = BertModel.from_pretrained(bert_model_name).to(DEVICE)
     model.eval()
