@@ -290,6 +290,7 @@ for epoch in range(NUM_EPOCHS):
 
     if epochs_no_improve >= PATIENCE:
         print(f"\n🛑 Early stopping triggered at epoch {epoch + 1}.")
+        NUM_EPOCHS = epoch + 1
         break
 
     print("-" * 60)

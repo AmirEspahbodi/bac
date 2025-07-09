@@ -41,7 +41,7 @@ def parse_arguments():
         "--embedding",
         type=str,
         required=True,
-        choices=[e.value for e in EmbeddingType],
+        choices=["glove", "bert_cls"],
         help="The type of word embedding to use.",
     )
 
@@ -72,6 +72,12 @@ except argparse.ArgumentError as e:
 aug_train_loader, val_loader, test_loader, NUM_LABELS = get_data_loaders(
     dataset, selected_embedding, remove_stop_words
 )
+
+if EmbeddingType.GLOVE == dataset:
+    print(f"aug_train_loader.shape = {aug_train_loader.shape}")
+    print(f"val_loader.shape = {val_loader.shape}")
+    print(f"test_loader.shape = {test_loader.shape}")
+
 
 BERT_DIM = 768
 BATCH_SIZE = 32

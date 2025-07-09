@@ -1,3 +1,4 @@
 from .bert_data_loader import get_data_loaders_bert
+from .bert_data_loader_cls import get_data_loaders_bert_cls
 from .glove_data_loader import data_loaders_with_glove
 from .embedding_type import EmbeddingType

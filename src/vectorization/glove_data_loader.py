@@ -143,6 +143,13 @@ def _download_glove(url: str, destination_path: Path):
             os.remove(destination_path)
         raise
 
+    except BaseException as e:
+        print(f"Error downloading file: {e}")
+        # Clean up partially downloaded file if it exists
+        if destination_path.exists():
+            os.remove(destination_path)
+        raise
+
 
 def load_glove_vectors(glove_path, embedding_dim):
     logging.info(
