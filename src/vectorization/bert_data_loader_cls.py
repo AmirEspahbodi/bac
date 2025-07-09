@@ -53,7 +53,7 @@ def get_data_loaders_bert_cls(
     test_dataset: pd.DataFrame,
     validation_dataset: pd.DataFrame,
     tokenizer: BertTokenizer,
-    batch_size: int = 16,
+    batch_size: int = 32,
     remove_stop_words=False,
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
