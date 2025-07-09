@@ -40,7 +40,7 @@ def load_dataset(dataset_type: DatasetType):
                 dataset_rpath="./datasets/jdt_data.csv"
                 dataset_processor = jdt_perpocess
             case DatasetType.SUN:
-                dataset_rpath="./datasets/sun_data.csv"
+                dataset_rpath="./datasets/sun_firefox.csv"
                 dataset_processor = sun_perpocess
             case DatasetType.CUSTOM:
                 raise NotImplementedError("not suported yet")
@@ -49,7 +49,7 @@ def load_dataset(dataset_type: DatasetType):
         dataset = pd.read_csv(current_dir / f"{dataset_rpath}")
     except FileNotFoundError:
         logging.error(
-            f"Error: dataset {dataset_type.value} not found at '{dataset_rpath}' or in the current directory. Please place it correctly."
+            f"Error: dataset {dataset_type} not found at '{dataset_rpath}' or in the current directory. Please place it correctly."
         )
         exit()
 

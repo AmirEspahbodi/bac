@@ -145,7 +145,7 @@ def contextual_word_replacement_mlm(
 def contextual_word_replacement_augmentation(train_dataset, dataset_type: DatasetType):
     output_file = "augmented_train_dataset_2.csv"
     save_path = Path(
-        f"datasets/{output_file.split('.')[0]}_{dataset_type.value.upper()}.{output_file.split('.')[1]}"
+        f"datasets/{output_file.split('.')[0]}_{dataset_type.upper()}.{output_file.split('.')[1]}"
     )
 
     # 1. Check if an augmented dataset already exists
