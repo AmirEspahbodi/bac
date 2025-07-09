@@ -209,8 +209,10 @@ def data_loaders_with_glove(
     This function initializes custom PyTorch Datasets for each data split and
     then uses a custom collate function to prepare batches with GloVe embeddings.
     """
+    print("1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1")
 
     vectors_map, unk_embedding = load_glove()
+
 
     class TextDataset(Dataset):
         """
@@ -283,22 +285,29 @@ def data_loaders_with_glove(
         return padded_texts, labels_tensor
 
     # Create dataset instances
+    print("2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2")
     train_data = TextDataset(train_dataset, bert_tokenizer, remove_stop_words=remove_stop_words)
+    print("3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3")
     test_data = TextDataset(test_dataset, bert_tokenizer)
+    print("4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4")
     validation_data = TextDataset(validation_dataset, bert_tokenizer)
+    print("5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5")
 
     # Create DataLoader instances
     train_loader = DataLoader(
         train_data, batch_size=batch_size, shuffle=True, collate_fn=collate_fn_glove
     )
+    print("6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6")
     test_loader = DataLoader(
         test_data, batch_size=batch_size, shuffle=False, collate_fn=collate_fn_glove
     )
+    print("7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7")
     validation_loader = DataLoader(
         validation_data,
         batch_size=batch_size,
         shuffle=False,
         collate_fn=collate_fn_glove,
     )
+    print("8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8 8")
 
     return train_loader, test_loader, validation_loader
