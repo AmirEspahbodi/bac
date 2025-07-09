@@ -4,7 +4,7 @@ import numpy as np
 
 
 # --- Top-k Accuracy Function ---
-def top_k_accuracy_fn(outputs, targets, k=3):
+def top_k_accuracy_fn(outputs, targets, k=5):
     batch_size = targets.size(0)
     if batch_size == 0:
         return 0.0
