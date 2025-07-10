@@ -207,7 +207,7 @@ def data_loaders_with_glove(
     test_dataset: pd.DataFrame,
     validation_dataset: pd.DataFrame,
     bert_tokenizer: BertTokenizer,
-    batch_size: int = 32,
+    batch_size: int = 16,
     remove_stop_words=False
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
