@@ -91,7 +91,7 @@ match selected_embedding:
         DROPOUT = 0.2
         model_save_path = f"{os.getcwd()}/.models/lMLPglove_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lMLPglove_result.json"
-    case "bert_cls:
+    case "bert_cls":
         BERT_DIM = 768
         HIDDEN_DIM = 512
         NUM_BLOCKS = 4
