@@ -56,7 +56,7 @@ def get_data_loaders(dataset_type: DatasetType, embedding_type:EmbeddingType, re
                 remove_stop_words=remove_stop_words
             )
         case EmbeddingType.BERT_MEAN:
-            aug_train_loader, val_loader, test_loader = get_data_loaders_bert_cls(
+            aug_train_loader, val_loader, test_loader = get_data_loaders_bert(
                 aug_train_dataset,
                 test_dataset,
                 validation_dataset,
