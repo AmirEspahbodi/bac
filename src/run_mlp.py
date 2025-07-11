@@ -46,7 +46,7 @@ def parse_arguments():
         "--embedding",
         type=str,
         required=True,
-        choices=["glove", "bert_cls"],
+        choices=["glove_mean", "bert_cls", "bert_mean"],
         help="The type of word embedding to use.",
     )
 
@@ -81,7 +81,7 @@ aug_train_loader, val_loader, test_loader, NUM_LABELS = get_data_loaders(
 print(selected_embedding)
 
 match selected_embedding:
-    case EmbeddingType.GLOVE:
+    case "glove_mean":
         aug_train_loader = single_vector_glove_dataloader(aug_train_loader)
         val_loader = single_vector_glove_dataloader(val_loader)
         test_loader = single_vector_glove_dataloader(test_loader)
@@ -91,7 +91,17 @@ match selected_embedding:
         DROPOUT = 0.2
         model_save_path = f"{os.getcwd()}/.models/lMLPglove_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lMLPglove_result.json"
-    case EmbeddingType.BERT_CLS:
+    case "bert_cls:
+        BERT_DIM = 768
+        HIDDEN_DIM = 512
+        NUM_BLOCKS = 4
+        DROPOUT = 0.2
+        model_save_path = f"{os.getcwd()}/.models/MLP_glove_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/MLP_glove_result.json"
+    case "bert_mean":
+        aug_train_loader = single_vector_glove_dataloader(aug_train_loader)
+        val_loader = single_vector_glove_dataloader(val_loader)
+        test_loader = single_vector_glove_dataloader(test_loader)
         BERT_DIM = 768
         HIDDEN_DIM = 512
         NUM_BLOCKS = 4
