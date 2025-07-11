@@ -19,7 +19,7 @@ def get_data_loaders(dataset_type: DatasetType, embedding_type:EmbeddingType, re
     bert_tokenizer = get_bert_tokenizer()
     
     match embedding_type:
-        case EmbeddingType.GLOVE:
+        case EmbeddingType.GLOVE | "glove_mean":
             aug_train_loader, val_loader, test_loader = data_loaders_with_glove(
                 aug_train_dataset,
                 test_dataset,
@@ -27,7 +27,7 @@ def get_data_loaders(dataset_type: DatasetType, embedding_type:EmbeddingType, re
                 bert_tokenizer,
                 remove_stop_words=remove_stop_words
             )
-        case EmbeddingType.BERT:
+        case EmbeddingType.BERT | "bert_mean":
             aug_train_loader, val_loader, test_loader = get_data_loaders_bert(
                 aug_train_dataset,
                 test_dataset,
