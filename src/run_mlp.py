@@ -16,8 +16,7 @@ from src.models import MLPClassifier
 from .utils import (
     train_one_epoch_m1,
     validation_epoch_fn,
-    select_best_optimizer_lr,
-    single_vector_glove_dataloader
+    select_best_optimizer_lr
 )
 
 def parse_arguments():
@@ -46,7 +45,7 @@ def parse_arguments():
         "--embedding",
         type=str,
         required=True,
-        choices=["glove", "bert_cls"],
+        choices=["glove_mean", "bert_cls", "bert_mean"],
         help="The type of word embedding to use.",
     )
 
@@ -81,10 +80,7 @@ aug_train_loader, val_loader, test_loader, NUM_LABELS = get_data_loaders(
 print(selected_embedding)
 
 match selected_embedding:
-    case EmbeddingType.GLOVE:
-        aug_train_loader = single_vector_glove_dataloader(aug_train_loader)
-        val_loader = single_vector_glove_dataloader(val_loader)
-        test_loader = single_vector_glove_dataloader(test_loader)
+    case EmbeddingType.GLOVE_MEAN:
         BERT_DIM = 300
         HIDDEN_DIM = 128
         NUM_BLOCKS = 4
@@ -98,7 +94,14 @@ match selected_embedding:
         DROPOUT = 0.2
         model_save_path = f"{os.getcwd()}/.models/MLP_glove_model.pt"
         result_save_path = f"{os.getcwd()}/.result/MLP_glove_result.json"
-
+    case EmbeddingType.BERT_MEAN:
+        BERT_DIM = 768
+        HIDDEN_DIM = 512
+        NUM_BLOCKS = 4
+        DROPOUT = 0.2
+        model_save_path = f"{os.getcwd()}/.models/MLP_glove_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/MLP_glove_result.json"
+        
 BATCH_SIZE = 32
 LABEL_SMOOTHING = 0.1
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")

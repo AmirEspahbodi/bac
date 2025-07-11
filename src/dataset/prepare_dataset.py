@@ -6,6 +6,7 @@ from src.vectorization import data_loaders_with_glove, get_data_loaders_bert, ge
 from ._dataset_types import DatasetType
 from src.vectorization import EmbeddingType
 from src.tokenization import get_bert_tokenizer
+from src.utils import get_single_vector_dataloader
 
 
 def get_data_loaders(dataset_type: DatasetType, embedding_type:EmbeddingType, remove_stop_words=False):
@@ -27,6 +28,17 @@ def get_data_loaders(dataset_type: DatasetType, embedding_type:EmbeddingType, re
                 bert_tokenizer,
                 remove_stop_words=remove_stop_words
             )
+        case EmbeddingType.GLOVE_MEAN:
+            aug_train_loader, val_loader, test_loader = data_loaders_with_glove(
+                aug_train_dataset,
+                test_dataset,
+                validation_dataset,
+                bert_tokenizer,
+                remove_stop_words=remove_stop_words
+            )
+            aug_train_loader = get_single_vector_dataloader(aug_train_loader)
+            val_loader = get_single_vector_dataloader(val_loader)
+            test_loader = get_single_vector_dataloader(test_loader)
         case EmbeddingType.BERT:
             aug_train_loader, val_loader, test_loader = get_data_loaders_bert(
                 aug_train_dataset,
@@ -43,4 +55,16 @@ def get_data_loaders(dataset_type: DatasetType, embedding_type:EmbeddingType, re
                 bert_tokenizer,
                 remove_stop_words=remove_stop_words
             )
+        case EmbeddingType.BERT_MEAN:
+            aug_train_loader, val_loader, test_loader = get_data_loaders_bert(
+                aug_train_dataset,
+                test_dataset,
+                validation_dataset,
+                bert_tokenizer,
+                remove_stop_words=remove_stop_words
+            )
+            aug_train_loader = get_single_vector_dataloader(aug_train_loader)
+            val_loader = get_single_vector_dataloader(val_loader)
+            test_loader = get_single_vector_dataloader(test_loader)
+
     return aug_train_loader, val_loader, test_loader, NUM_ACTUAL_CLS
