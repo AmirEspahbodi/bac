@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-def single_vector_glove_dataloader(token_loader: DataLoader,
+def get_single_vector_dataloader(token_loader: DataLoader,
                          batch_size: int = 32,
                          shuffle: bool = False,
                          num_workers: int = 0,
