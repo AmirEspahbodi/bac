@@ -182,7 +182,7 @@ class LSTMModel(nn.Module):
                     config.attention_dropout
                 )
             else:
-                self.attention = LuongAttention(lstm_output_size, method='general')
+                self.attention = LuongAttention(lstm_output_size, method='concat')
         else:
             self.attention = None
             
