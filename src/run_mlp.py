@@ -16,8 +16,7 @@ from src.models import MLPClassifier
 from .utils import (
     train_one_epoch_m1,
     validation_epoch_fn,
-    select_best_optimizer_lr,
-    single_vector_glove_dataloader
+    select_best_optimizer_lr
 )
 
 def parse_arguments():
@@ -82,26 +81,13 @@ print(selected_embedding)
 
 match selected_embedding:
     case "glove_mean":
-        aug_train_loader = single_vector_glove_dataloader(aug_train_loader)
-        val_loader = single_vector_glove_dataloader(val_loader)
-        test_loader = single_vector_glove_dataloader(test_loader)
         BERT_DIM = 300
         HIDDEN_DIM = 128
         NUM_BLOCKS = 4
         DROPOUT = 0.2
         model_save_path = f"{os.getcwd()}/.models/lMLPglove_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lMLPglove_result.json"
-    case "bert_cls":
-        BERT_DIM = 768
-        HIDDEN_DIM = 512
-        NUM_BLOCKS = 4
-        DROPOUT = 0.2
-        model_save_path = f"{os.getcwd()}/.models/MLP_glove_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/MLP_glove_result.json"
-    case "bert_mean":
-        aug_train_loader = single_vector_glove_dataloader(aug_train_loader)
-        val_loader = single_vector_glove_dataloader(val_loader)
-        test_loader = single_vector_glove_dataloader(test_loader)
+    case "bert_cls" | "bert_mean":
         BERT_DIM = 768
         HIDDEN_DIM = 512
         NUM_BLOCKS = 4
