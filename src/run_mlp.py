@@ -80,21 +80,28 @@ aug_train_loader, val_loader, test_loader, NUM_LABELS = get_data_loaders(
 print(selected_embedding)
 
 match selected_embedding:
-    case "glove_mean":
+    case EmbeddingType.GLOVE_MEAN:
         BERT_DIM = 300
         HIDDEN_DIM = 128
         NUM_BLOCKS = 4
         DROPOUT = 0.2
         model_save_path = f"{os.getcwd()}/.models/lMLPglove_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lMLPglove_result.json"
-    case "bert_cls" | "bert_mean":
+    case EmbeddingType.BERT_CLS:
         BERT_DIM = 768
         HIDDEN_DIM = 512
         NUM_BLOCKS = 4
         DROPOUT = 0.2
         model_save_path = f"{os.getcwd()}/.models/MLP_glove_model.pt"
         result_save_path = f"{os.getcwd()}/.result/MLP_glove_result.json"
-
+    case EmbeddingType.BERT_MEAN:
+        BERT_DIM = 768
+        HIDDEN_DIM = 512
+        NUM_BLOCKS = 4
+        DROPOUT = 0.2
+        model_save_path = f"{os.getcwd()}/.models/MLP_glove_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/MLP_glove_result.json"
+        
 BATCH_SIZE = 32
 LABEL_SMOOTHING = 0.1
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
