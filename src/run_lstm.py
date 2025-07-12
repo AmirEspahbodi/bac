@@ -107,10 +107,9 @@ def parse_arguments():
         "-nah",
         "--num_attention_heads",
         type=int,
-        default=0,
+        default=1,
         required=False,
-        choices=[0, 1],
-        help="remove stop words on tain dataset.",
+        help="number of attention heads.",
     )
     parser.add_argument(
         "-lam",
