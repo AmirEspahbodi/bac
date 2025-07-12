@@ -20,6 +20,7 @@ class LSTMConfig:
     layer_norm: bool = True
     residual_connections: bool = True
     gradient_clipping: float = 1.0
+    luong_attention_method: str = "general"
     
     def __post_init__(self):
         """Validate configuration parameters"""
@@ -182,7 +183,7 @@ class LSTMModel(nn.Module):
                     config.attention_dropout
                 )
             else:
-                self.attention = LuongAttention(lstm_output_size, method='concat')
+                self.attention = LuongAttention(lstm_output_size, method=config.luong_attention_method)
         else:
             self.attention = None
             

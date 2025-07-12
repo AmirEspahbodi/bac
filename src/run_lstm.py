@@ -112,6 +112,15 @@ def parse_arguments():
         choices=[0, 1],
         help="remove stop words on tain dataset.",
     )
+    parser.add_argument(
+        "-lam",
+        "--luong_attention_method",
+        type=str,
+        default="general",
+        required=False,
+        choices=["dot", "general", "concat"],
+        help="luong attention mechanism.",
+    )
     return parser.parse_args()
 
 
@@ -129,6 +138,7 @@ try:
     num_attention_heads = args.num_attention_heads
     dataset = args.dataset
     NUM_EPOCHS = args.num_epochs
+    luong_attention_method = args.luong_attention_method
 
 
 except argparse.ArgumentError as e:
@@ -158,6 +168,7 @@ match selected_embedding:
             bidirectional=is_bidirectional,
             use_attention=is_attention,
             attention_heads=num_attention_heads,
+            luong_attention_method=luong_attention_method
         )
         model_save_path = f"{os.getcwd()}/.models/lstm_glove_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lstm_glove_result.json"
@@ -175,6 +186,7 @@ match selected_embedding:
             bidirectional=is_bidirectional,
             use_attention=is_attention,
             attention_heads=num_attention_heads,
+            luong_attention_method=luong_attention_method
         )
         model_save_path = f"{os.getcwd()}/.models/lstm_bert_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lstm_bert_result.json"
