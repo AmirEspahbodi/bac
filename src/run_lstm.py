@@ -107,10 +107,9 @@ def parse_arguments():
         "-nah",
         "--num_attention_heads",
         type=int,
-        default=0,
+        default=1,
         required=False,
-        choices=[0, 1],
-        help="remove stop words on tain dataset.",
+        help="number of attention heads.",
     )
     parser.add_argument(
         "-lam",
@@ -191,9 +190,6 @@ match selected_embedding:
         model_save_path = f"{os.getcwd()}/.models/lstm_bert_model.pt"
         result_save_path = f"{os.getcwd()}/.result/lstm_bert_result.json"
 
-lstm_model = LSTMModel(config).to(device=DEVICE)
-
-print(f"\n------\nlstm model info: \n{get_model_info(lstm_model)}\n------\n")
 
 LABEL_SMOOTHING_FACTOR = 0.1
 GRADIENT_CLIP_VALUE = 1.0
@@ -207,15 +203,21 @@ MIN_DELTA = 0.0001
 
 loss_fn = nn.CrossEntropyLoss(label_smoothing=LABEL_SMOOTHING_FACTOR)
 
-
+lstm_model_test = LSTMModel(config).to(device=DEVICE)
 selected_optimizer_class, selected_lr = select_best_optimizer_lr(
     1,
-    lstm_model,
+    lstm_model_test,
     aug_train_loader,
     loss_fn,
     GRADIENT_CLIP_VALUE,
     DEVICE
 )
+del lstm_model_test
+
+lstm_model = LSTMModel(config).to(device=DEVICE)
+
+print(f"\n------\nlstm model info: \n{get_model_info(lstm_model)}\n------\n")
+
 
 print(selected_optimizer_class, selected_lr)
 
@@ -240,6 +242,8 @@ else:
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
     optimizer, T_max=NUM_EPOCHS, eta_min=1e-6
 )
+
+
 
 loss_train_hist = []
 loss_valid_hist = []

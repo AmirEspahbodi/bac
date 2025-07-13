@@ -85,23 +85,23 @@ match selected_embedding:
         HIDDEN_DIM = 128
         NUM_BLOCKS = 4
         DROPOUT = 0.2
-        model_save_path = f"{os.getcwd()}/.models/lMLPglove_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/lMLPglove_result.json"
+        model_save_path = f"{os.getcwd()}/.models/MLP_glove_mean_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/MLP_glove_mean_result.json"
     case EmbeddingType.BERT_CLS:
         BERT_DIM = 768
         HIDDEN_DIM = 512
         NUM_BLOCKS = 4
         DROPOUT = 0.2
-        model_save_path = f"{os.getcwd()}/.models/MLP_glove_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/MLP_glove_result.json"
+        model_save_path = f"{os.getcwd()}/.models/MLP_bert_cls_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/MLP_bert_cls_result.json"
     case EmbeddingType.BERT_MEAN:
         BERT_DIM = 768
         HIDDEN_DIM = 512
         NUM_BLOCKS = 4
         DROPOUT = 0.2
-        model_save_path = f"{os.getcwd()}/.models/MLP_glove_model.pt"
-        result_save_path = f"{os.getcwd()}/.result/MLP_glove_result.json"
-        
+        model_save_path = f"{os.getcwd()}/.models/MLP_bert_mean_model.pt"
+        result_save_path = f"{os.getcwd()}/.result/MLP_bert_mean_result.json"
+
 BATCH_SIZE = 32
 LABEL_SMOOTHING = 0.1
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
