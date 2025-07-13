@@ -5,12 +5,12 @@ from pathlib import Path
 from pprint import pprint
 from typing import Dict, Any, List, Optional
 import pandas as pd
-import seaborn as sns
+import numpy as np
 import matplotlib.pyplot as plt
 import os
 from typing import Dict, Any
 import plotly.express as px
-import plotly.graph_objects as go
+
 
 gcc_result = {
     "mlp": {
@@ -427,7 +427,7 @@ def plot_and_save_metric(df: pd.DataFrame, metric_name: str, output_dir: str, da
 
     # --- Save the figure ---
     # Define the full file path
-    file_path = os.path.join(output_dir, f'{dataset_name}_{metric_name}_performance.png')
+    file_path = os.path.join(output_dir, f'{dataset_name}_{metric_name}_performance1.png')
     
     # Save the figure to the specified path
     # Using a higher resolution for better quality in the saved file
@@ -491,5 +491,68 @@ if __name__ == '__main__':
     print(gcc_result)
     print(jdt_result)
 
+    output_dir = 'final_metric_diagrams'
+
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"Output directory '{output_dir}' is ready.")
+    
     for jdata, dname in [(gcc_result, "gcc"), (jdt_result, "jdt")]:
         main(jdata, dname)
+
+    for jdata, dname in [(gcc_result, "gcc"), (jdt_result, "jdt")]:
+        data = []
+        for model, embeddings in jdata.items():
+            for embedding_type, metrics in embeddings.items():
+                for metric, value in metrics.items():
+                    data.append([model, embedding_type, metric, value])
+
+        df = pd.DataFrame(data, columns=['model', 'embedding', 'metric', 'value'])
+
+        # Get unique metrics to create a plot for each
+        metrics = df['metric'].unique()
+        # Get unique models
+        models = df['model'].unique()
+        # Get unique embeddings
+        embeddings = df['embedding'].unique()
+
+        # Define colors for each embedding type
+        colors = {'bert': 'red', 'glove': 'blue', 'bert_cls': 'green', 'bert_mean': 'orange', 'glove_mean': 'purple'}
+
+        # Create a plot for each metric
+        for metric in metrics:
+            plt.figure(figsize=(20, 10))
+            
+            # Filter data for the current metric
+            metric_df = df[df['metric'] == metric]
+            
+            # Set the x-axis positions for the bars
+            x = np.arange(len(models))
+            width = 0.2
+            
+            # Create the bars for each embedding type
+            for i, embedding in enumerate(embeddings):
+                # Get the values for the current embedding and metric
+                values = []
+                for model in models:
+                    # Check if the model has this embedding
+                    if not metric_df[(metric_df['model'] == model) & (metric_df['embedding'] == embedding)].empty:
+                        values.append(metric_df[(metric_df['model'] == model) & (metric_df['embedding'] == embedding)]['value'].iloc[0])
+                    else:
+                        values.append(0)  # If no value, append 0
+                
+                # Plot the bars
+                plt.bar(x + i*width, values, width, label=embedding, color=colors.get(embedding))
+
+            # Add labels, title, and legend
+            plt.ylabel('Scores', fontsize=14)
+            plt.xlabel('Models', fontsize=14)
+            plt.title(f'Model Performance for {metric.upper()}', fontsize=16)
+            plt.xticks(x + width, models, rotation=45, ha="right")
+            plt.legend(title='Embedding Type', fontsize=12)
+            plt.grid(axis='y', linestyle='--', alpha=0.7)
+            plt.tight_layout()
+            
+            # Save the plot
+            plt.savefig(f'{output_dir}/{dname}_{metric}_performance2.png')
+            
+        plt.show()

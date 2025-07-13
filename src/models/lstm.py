@@ -32,10 +32,6 @@ class LSTMConfig:
 
 
 class LuongAttention(nn.Module):
-    """
-    Luong Attention Mechanism Implementation
-    Supports general, dot, and concat attention methods
-    """
 
     def __init__(self, hidden_size: int, num_heads: int = 1, method: str = 'general'):
         super().__init__()
@@ -58,54 +54,36 @@ class LuongAttention(nn.Module):
         
     def forward(self, query: torch.Tensor, keys: torch.Tensor, 
                 values: torch.Tensor, mask: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        Args:
-            query: [batch_size, hidden_size] - typically the last hidden state
-            keys: [batch_size, seq_len, hidden_size] - all hidden states
-            values: [batch_size, seq_len, hidden_size] - all hidden states
-            mask: [batch_size, seq_len] - padding mask
-            
-        Returns:
-            context: [batch_size, hidden_size] - attended context vector
-            attention_weights: [batch_size, seq_len] - attention weights
-        """
         batch_size, seq_len, hidden_size = keys.size()
         
         if self.method == 'dot':
-            # query: [batch_size, 1, hidden_size]
-            scores = torch.bmm(query.unsqueeze(1), keys.transpose(1, 2))  # [batch_size, 1, seq_len]
-            scores = scores.squeeze(1)  # [batch_size, seq_len]
+            scores = torch.bmm(query.unsqueeze(1), keys.transpose(1, 2)) 
+            scores = scores.squeeze(1) 
             
         elif self.method == 'general':
-            # Transform query and compute attention scores
-            transformed_query = self.attn(query).unsqueeze(1)  # [batch_size, 1, hidden_size]
-            scores = torch.bmm(transformed_query, keys.transpose(1, 2)).squeeze(1)  # [batch_size, seq_len]
+            transformed_query = self.attn(query).unsqueeze(1) 
+            scores = torch.bmm(transformed_query, keys.transpose(1, 2)).squeeze(1) 
             
         elif self.method == 'concat':
             # Expand query to match sequence length
-            expanded_query = query.unsqueeze(1).expand(-1, seq_len, -1)  # [batch_size, seq_len, hidden_size]
-            concat_input = torch.cat([expanded_query, keys], dim=2)  # [batch_size, seq_len, hidden_size*2]
-            scores = torch.tanh(self.attn(concat_input))  # [batch_size, seq_len, hidden_size]
-            scores = torch.sum(scores * self.v, dim=2)  # [batch_size, seq_len]
+            expanded_query = query.unsqueeze(1).expand(-1, seq_len, -1) 
+            concat_input = torch.cat([expanded_query, keys], dim=2) 
+            scores = torch.tanh(self.attn(concat_input)) 
+            scores = torch.sum(scores * self.v, dim=2)
         
-        # Apply scaling
         scores = scores / self.scale
         
-        # Apply mask if provided
         if mask is not None:
             scores = scores.masked_fill(mask == 0, -1e9)
         
-        # Compute attention weights
-        attention_weights = F.softmax(scores, dim=1)  # [batch_size, seq_len]
-        
-        # Compute context vector
-        context = torch.bmm(attention_weights.unsqueeze(1), values).squeeze(1)  # [batch_size, hidden_size]
+        attention_weights = F.softmax(scores, dim=1)
+
+        context = torch.bmm(attention_weights.unsqueeze(1), values).squeeze(1)
         
         return context, attention_weights
 
 
 class MultiHeadLuongAttention(nn.Module):
-    """Multi-head version of Luong Attention"""
     
     def __init__(self, hidden_size: int, num_heads: int, dropout: float = 0.1):
         super().__init__()
@@ -127,29 +105,25 @@ class MultiHeadLuongAttention(nn.Module):
                 values: torch.Tensor, mask: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor]:
         batch_size, seq_len, _ = keys.size()
         
-        # Linear transformations and reshape for multi-head
         Q = self.q_linear(query).view(batch_size, 1, self.num_heads, self.head_dim).transpose(1, 2)
         K = self.k_linear(keys).view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
         V = self.v_linear(values).view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
         
-        # Attention computation
-        scores = torch.matmul(Q, K.transpose(-2, -1)) / self.scale  # [batch_size, num_heads, 1, seq_len]
+        scores = torch.matmul(Q, K.transpose(-2, -1)) / self.scale 
         
         if mask is not None:
-            mask = mask.unsqueeze(1).unsqueeze(1)  # [batch_size, 1, 1, seq_len]
+            mask = mask.unsqueeze(1).unsqueeze(1)
             scores = scores.masked_fill(mask == 0, -1e9)
         
         attention_weights = F.softmax(scores, dim=-1)
         attention_weights = self.dropout(attention_weights)
         
-        context = torch.matmul(attention_weights, V)  # [batch_size, num_heads, 1, head_dim]
+        context = torch.matmul(attention_weights, V) 
         context = context.transpose(1, 2).contiguous().view(batch_size, self.hidden_size)
         
-        # Final linear transformation
         context = self.out_linear(context)
         
-        # Average attention weights across heads for visualization
-        avg_attention = attention_weights.mean(dim=1).squeeze(1)  # [batch_size, seq_len]
+        avg_attention = attention_weights.mean(dim=1).squeeze(1) 
         
         return context, avg_attention
 
@@ -202,7 +176,7 @@ class LSTMModel(nn.Module):
         # Output layers
         classifier_input_size = lstm_output_size
         if config.use_attention:
-            classifier_input_size = lstm_output_size  # Context vector size
+            classifier_input_size = lstm_output_size 
             
         self.classifier = nn.Sequential(
             nn.Linear(classifier_input_size, classifier_input_size // 2),
@@ -236,20 +210,16 @@ class LSTMModel(nn.Module):
         # Store hidden states for output
         hidden_states = lstm_out
         
-        # Attention mechanism
         attention_weights = None
         if self.attention is not None:
-            # Create padding mask if lengths are provided
             mask = None
             if lengths is not None:
                 mask = self.create_padding_mask(inputs, lengths)
             
-            # Use the last hidden state as query
             if self.config.bidirectional:
-                # For bidirectional LSTM, concatenate forward and backward final states
-                query = torch.cat([hidden[-2], hidden[-1]], dim=1)  # [batch_size, hidden_size*2]
+                query = torch.cat([hidden[-2], hidden[-1]], dim=1)  
             else:
-                query = hidden[-1]  # [batch_size, hidden_size]
+                query = hidden[-1]
                 
             # Apply attention
             context, attention_weights = self.attention(query, lstm_out, lstm_out, mask)
@@ -269,13 +239,11 @@ class LSTMModel(nn.Module):
             else:
                 final_representation = hidden[-1, :, :]
                 
-        # Classification
         logits = self.classifier(final_representation)
         
         return logits
 
     def _init_weights(self):
-        """Initialize model weights"""
         for name, param in self.named_parameters():
             if 'weight_ih' in name:
                 nn.init.xavier_uniform_(param)
@@ -287,7 +255,6 @@ class LSTMModel(nn.Module):
                 nn.init.xavier_uniform_(param)
                 
     def create_padding_mask(self, inputs: torch.Tensor, lengths: torch.Tensor) -> torch.Tensor:
-        """Create padding mask for attention mechanism"""
         batch_size, max_len = inputs.size(0), inputs.size(1)
         mask = torch.arange(max_len, device=inputs.device).expand(batch_size, max_len)
         mask = mask < lengths.unsqueeze(1)
@@ -295,20 +262,18 @@ class LSTMModel(nn.Module):
        
        
     def get_attention_weights(self) -> Optional[torch.Tensor]:
-        """Get the last computed attention weights"""
         return getattr(self, '_last_attention_weights', None)
 
 
 
 def get_model_info(model: LSTMModel) -> Dict[str, Any]:
-    """Get model information and statistics"""
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     
     return {
         'total_parameters': total_params,
         'trainable_parameters': trainable_params,
-        'model_size_mb': total_params * 4 / 1024 / 1024,  # Assuming float32
+        'model_size_mb': total_params * 4 / 1024 / 1024,
         'config': model.config,
         'is_bidirectional': model.config.bidirectional,
         'uses_attention': model.config.use_attention,
