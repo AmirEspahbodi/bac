@@ -214,6 +214,11 @@ selected_optimizer_class, selected_lr = select_best_optimizer_lr(
 )
 del lstm_model_test
 
+lstm_model = LSTMModel(config).to(device=DEVICE)
+
+print(f"\n------\nlstm model info: \n{get_model_info(lstm_model)}\n------\n")
+
+
 print(selected_optimizer_class, selected_lr)
 
 if selected_optimizer_class is optim.SGD:
@@ -238,9 +243,6 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
     optimizer, T_max=NUM_EPOCHS, eta_min=1e-6
 )
 
-lstm_model = LSTMModel(config).to(device=DEVICE)
-
-print(f"\n------\nlstm model info: \n{get_model_info(lstm_model)}\n------\n")
 
 
 loss_train_hist = []
