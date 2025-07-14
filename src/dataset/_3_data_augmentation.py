@@ -19,7 +19,7 @@ import pandas as pd
 import torch
 
 # --- Configuration ---
-class Config:
+class _Config:
     """
     Configuration class for the data augmentation pipeline.
     """
@@ -40,12 +40,12 @@ class Config:
 
 
 # --- Data Augmentation Pipeline ---
-class DataAugmentationPipeline:
+class _DataAugmentationPipeline:
     """
     A fully automated pipeline to address data scarcity and imbalance using
     data-driven few-shot prompting and augmentation.
     """
-    def __init__(self, config: Config):
+    def __init__(self, config: _Config):
         self.config = config
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self._setup_logging()
@@ -233,7 +233,7 @@ class DataAugmentationPipeline:
         return final_df
 
 
-def contextual_word_replacement_mlm(
+def _contextual_word_replacement_mlm(
     text, tokenizer, model, device, n_replacements=1, top_k=5, num_augnemtations=2
 ):
     if not isinstance(text, str) or not text.strip():
@@ -347,17 +347,7 @@ def contextual_word_replacement_mlm(
     return result
 
 
-def contextual_word_replacement_augmentation(train_dataset, dataset_type: DatasetType):
-    output_file = "augmented_train_dataset_2.csv"
-    save_path = Path(
-        f"datasets/{output_file.split('.')[0]}_{dataset_type.upper()}.{output_file.split('.')[1]}"
-    )
-
-    # 1. Check if an augmented dataset already exists
-    if os.path.exists(save_path):
-        print(f"✅ Loading pre-saved augmented dataset from '{save_path}'.")
-        return pd.read_csv(save_path)
-
+def _contextual_word_replacement_augmentation(train_dataset, dataset_type: DatasetType):
     # --- CONTEXTUAL WORD REPLACEMENT AUGMENTATION ---
     print("\nStarting Contextual Word Replacement Augmentation on train_dataset...")
 
@@ -411,7 +401,7 @@ def contextual_word_replacement_augmentation(train_dataset, dataset_type: Datase
                 continue
             try:
                 # Apply the contextual word replacement function
-                augmented_text_entries = contextual_word_replacement_mlm(
+                augmented_text_entries = _contextual_word_replacement_mlm(
                     entry[1]["text_input"],
                     tokenizer,
                     model,
@@ -466,16 +456,30 @@ def contextual_word_replacement_augmentation(train_dataset, dataset_type: Datase
         )
         print(f"Shape of aug_train_dataset (copy): {aug_train_dataset.shape}")
 
+    return aug_train_dataset
+
+def do_data_augmentation(train_dataset, dataset_type: DatasetType):
+    output_file = "augmented_train_dataset.csv"
+    save_path = Path(
+        f"datasets/{output_file.split('.')[0]}_{dataset_type.upper()}.{output_file.split('.')[1]}"
+    )
+
+    # 1. Check if an augmented dataset already exists
+    if os.path.exists(save_path):
+        print(f"✅ Loading pre-saved augmented dataset from '{save_path}'.")
+        return pd.read_csv(save_path)
+    
+    pipeline_config = _Config()
+    augmentation_pipeline = _DataAugmentationPipeline(pipeline_config)
+    
+    llm_prompt_and_salt_augmented_df = augmentation_pipeline.run(train_dataset)
+
+    aug_train_dataset = _contextual_word_replacement_augmentation(llm_prompt_and_salt_augmented_df, dataset_type)
+
     try:
         aug_train_dataset.to_csv(save_path, index=False)
         print(f"✅ Augmented dataset successfully saved to '{save_path}'.")
     except Exception as e:
         print(f"❌ Error saving augmented dataset to '{save_path}': {e}")
-
-    return aug_train_dataset
-
-def do_data_augmentation(train_dataset, dataset_type: DatasetType):
-    pipeline_config = Config()
-    augmentation_pipeline = DataAugmentationPipeline(pipeline_config)
     
-    augmented_df = augmentation_pipeline.run(train_dataset, bug_class_rubrics)
+    return aug_train_dataset
