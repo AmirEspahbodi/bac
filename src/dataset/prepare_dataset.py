@@ -1,6 +1,5 @@
 from ._1_load_dataset import load_dataset
 from ._2_splitting import slit_dataset
-from ._3_data_augmentation import contextual_data_augmentation
 from ._3_data_augmentation import solve_dataset_imbalaced_low_resource_text
 from src.vectorization import data_loaders_with_glove, get_data_loaders_bert, get_data_loaders_bert_cls
 from ._dataset_types import DatasetType
