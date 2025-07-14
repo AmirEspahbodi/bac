@@ -24,6 +24,7 @@ dependencies = [
     "nbformat (>=5.10.4,<6.0.0)",
     "kaleido (>=1.0.0,<2.0.0)",
     "seaborn (>=0.13.2,<0.14.0)",
+    "sentence-transformers (>=5.0.0,<6.0.0)",
 ]
 
 [tool.poetry]
