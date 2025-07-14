@@ -458,7 +458,7 @@ def _contextual_word_replacement_augmentation(train_dataset, dataset_type: Datas
 
     return aug_train_dataset
 
-def do_data_augmentation(train_dataset, dataset_type: DatasetType):
+def solve_dataset_imbalaced_low_resource_text(train_dataset, dataset_type: DatasetType):
     output_file = "augmented_train_dataset.csv"
     save_path = Path(
         f"datasets/{output_file.split('.')[0]}_{dataset_type.upper()}.{output_file.split('.')[1]}"

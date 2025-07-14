@@ -1,7 +1,7 @@
 from ._1_load_dataset import load_dataset
 from ._2_splitting import slit_dataset
 from ._3_data_augmentation import contextual_data_augmentation
-from ._3_data_augmentation import contextual_word_replacement_augmentation
+from ._3_data_augmentation import solve_dataset_imbalaced_low_resource_text
 from src.vectorization import data_loaders_with_glove, get_data_loaders_bert, get_data_loaders_bert_cls
 from ._dataset_types import DatasetType
 from src.vectorization import EmbeddingType
@@ -14,7 +14,7 @@ def get_data_loaders(dataset_type: DatasetType, embedding_type:EmbeddingType, re
         dataset_type
     )
     train_dataset, test_dataset, validation_dataset = slit_dataset(dataset)
-    aug_train_dataset = contextual_word_replacement_augmentation(
+    aug_train_dataset = solve_dataset_imbalaced_low_resource_text(
         train_dataset, dataset_type
     )
     bert_tokenizer = get_bert_tokenizer()
