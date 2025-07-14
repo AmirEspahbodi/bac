@@ -103,8 +103,8 @@ class _DataAugmentationPipeline:
         class_prototypes = {}
         class_samples = {}
         
-        for label in df['label'].unique():
-            class_texts = df[df['label'] == label]['text'].tolist()
+        for label in df['assignee_encoded'].unique():
+            class_texts = df[df['assignee_encoded'] == label]['text_input'].tolist()
             class_samples[label] = class_texts
             
             # Ensure there's text to encode
@@ -121,7 +121,7 @@ class _DataAugmentationPipeline:
     def _bootstrap_minority_classes(self, df: pd.DataFrame, class_samples: Dict[str, List[str]]) -> pd.DataFrame:
         """Stage 1: Generate synthetic data using few-shot examples from the data itself."""
         self.logger.info("--- Stage 1: Bootstrapping Ultra-Minority Classes ---")
-        class_counts = df['label'].value_counts()
+        class_counts = df['assignee_encoded'].value_counts()
         minority_classes = class_counts[class_counts < self.config.MIN_SAMPLES_THRESHOLD].index.tolist()
 
         if not minority_classes:
@@ -153,7 +153,7 @@ class _DataAugmentationPipeline:
         
         generated_texts = self._generate_text_with_llm(prompts_to_generate)
         synthetic_df = pd.DataFrame({
-            'text': generated_texts, 'label': labels_for_prompts, 'source': 'synthetic_bootstrap'
+            'text_input': generated_texts, 'assignee_encoded': labels_for_prompts, 'source': 'synthetic_bootstrap'
         })
         self.logger.info(f"Generated {len(synthetic_df)} new samples for minority classes.")
         return synthetic_df
@@ -168,9 +168,9 @@ class _DataAugmentationPipeline:
         self.logger.info("Generating positive samples (structure-aware masking)...")
         positive_texts = [
             " ".join([token.text if token.pos_ not in self.config.NON_CAUSAL_POS_TAGS else self.config.MASK_TOKEN for token in doc])
-            for doc in tqdm(self.nlp.pipe(df['text']), total=len(df), desc="POS Masking")
+            for doc in tqdm(self.nlp.pipe(df['text_input']), total=len(df), desc="POS Masking")
         ]
-        positive_df = pd.DataFrame({'text': positive_texts, 'label': df['label'], 'source': 'salad_positive'})
+        positive_df = pd.DataFrame({'text_input': positive_texts, 'assignee_encoded': df['assignee_encoded'], 'source': 'salad_positive'})
 
         # Negative Samples
         self.logger.info("Generating negative samples (counterfactual generation)...")
@@ -180,7 +180,7 @@ class _DataAugmentationPipeline:
         counterfactual_prompts, counterfactual_labels = [], []
         
         for _, row in tqdm(df.iterrows(), total=len(df), desc="Creating Counterfactual Prompts"):
-            original_label, original_text = row['label'], row['text']
+            original_label, original_text = row['assignee_encoded'], row['text_input']
             if original_label not in class_prototypes:
                 continue
 
@@ -202,7 +202,7 @@ class _DataAugmentationPipeline:
             counterfactual_labels.append(target_label)
 
         generated_counterfactuals = self._generate_text_with_llm(counterfactual_prompts)
-        negative_df = pd.DataFrame({'text': generated_counterfactuals, 'label': counterfactual_labels, 'source': 'salad_negative'})
+        negative_df = pd.DataFrame({'text_input': generated_counterfactuals, 'assignee_encoded': counterfactual_labels, 'source': 'salad_negative'})
         
         self.logger.info(f"Generated {len(positive_df)} positive and {len(negative_df)} negative samples.")
         return pd.concat([positive_df, negative_df], ignore_index=True)
