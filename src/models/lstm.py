@@ -57,19 +57,20 @@ class LuongAttention(nn.Module):
         batch_size, seq_len, hidden_size = keys.size()
         
         if self.method == 'dot':
-            scores = torch.bmm(query.unsqueeze(1), keys.transpose(1, 2)) 
-            scores = scores.squeeze(1) 
+            scores = torch.bmm(query.unsqueeze(1), keys.transpose(1, 2))  # [B, 1, L] 
+            scores = scores.squeeze(1)                                   # [B, L]
             
         elif self.method == 'general':
-            transformed_query = self.attn(query).unsqueeze(1) 
-            scores = torch.bmm(transformed_query, keys.transpose(1, 2)).squeeze(1) 
+            transformed_query = self.attn(query)        # nn.Linear(d, d) --> [B, d]
+            scores = torch.bmm(transformed_query.unsqueeze(1),
+                            keys.transpose(1, 2)).squeeze(1)  # [B, L]
             
         elif self.method == 'concat':
-            # Expand query to match sequence length
-            expanded_query = query.unsqueeze(1).expand(-1, seq_len, -1) 
-            concat_input = torch.cat([expanded_query, keys], dim=2) 
-            scores = torch.tanh(self.attn(concat_input)) 
-            scores = torch.sum(scores * self.v, dim=2)
+            expanded_query = query.unsqueeze(1).expand(-1, seq_len, -1)  # [B, L, d]
+            concat_input = torch.cat([expanded_query, keys], dim=2)      # [B, L, 2d]
+            scores = torch.tanh(self.attn(concat_input))                 # nn.Linear(2d, d)
+            scores = torch.sum(scores * self.v, dim=2)                   # تجمیع با بردار v --> [B, L]
+
         
         scores = scores / self.scale
         
@@ -104,11 +105,17 @@ class MultiHeadLuongAttention(nn.Module):
     def forward(self, query: torch.Tensor, keys: torch.Tensor, 
                 values: torch.Tensor, mask: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor]:
         batch_size, seq_len, _ = keys.size()
+
+        # 1. نگاشت خطی و تقسیم به سرها
+        Q = self.q_linear(query)   # [B,  hidden_size]
+        K = self.k_linear(keys)    # [B, L, hidden_size]
+        V = self.v_linear(values)  # [B, L, hidden_size]
         
-        Q = self.q_linear(query).view(batch_size, 1, self.num_heads, self.head_dim).transpose(1, 2)
-        K = self.k_linear(keys).view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
-        V = self.v_linear(values).view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
-        
+        # reshape برای چندسر: [B, seq, hidden] -> [B, num_heads, seq, head_dim]
+        Q = Q.view(batch_size, 1, self.num_heads, self.head_dim).transpose(1, 2)
+        K = K.view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
+        V = V.view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
+
         scores = torch.matmul(Q, K.transpose(-2, -1)) / self.scale 
         
         if mask is not None:

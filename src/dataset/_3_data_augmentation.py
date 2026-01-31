@@ -172,40 +172,41 @@ class _DataAugmentationPipeline:
         ]
         positive_df = pd.DataFrame({'text_input': positive_texts, 'assignee_encoded': df['assignee_encoded'], 'source': 'salad_positive'})
 
-        # Negative Samples
-        self.logger.info("Generating negative samples (counterfactual generation)...")
-        all_labels = list(class_prototypes.keys())
-        all_prototypes = torch.stack(list(class_prototypes.values()))
+        # # Negative Samples
+        # self.logger.info("Generating negative samples (counterfactual generation)...")
+        # all_labels = list(class_prototypes.keys())
+        # all_prototypes = torch.stack(list(class_prototypes.values()))
         
-        counterfactual_prompts, counterfactual_labels = [], []
+        # counterfactual_prompts, counterfactual_labels = [], []
         
-        for _, row in tqdm(df.iterrows(), total=len(df), desc="Creating Counterfactual Prompts"):
-            original_label, original_text = row['assignee_encoded'], row['text_input']
-            if original_label not in class_prototypes:
-                continue
+        # for _, row in tqdm(df.iterrows(), total=len(df), desc="Creating Counterfactual Prompts"):
+        #     original_label, original_text = row['assignee_encoded'], row['text_input']
+        #     if original_label not in class_prototypes:
+        #         continue
 
-            # Find most similar class using prototype embeddings
-            original_prototype = class_prototypes[original_label]
-            cosine_scores = util.cos_sim(original_prototype, all_prototypes)[0]
-            cosine_scores[all_labels.index(original_label)] = -1 # Exclude self
-            target_label = all_labels[torch.argmax(cosine_scores).item()]
+        #     # Find most similar class using prototype embeddings
+        #     original_prototype = class_prototypes[original_label]
+        #     cosine_scores = util.cos_sim(original_prototype, all_prototypes)[0]
+        #     cosine_scores[all_labels.index(original_label)] = -1 # Exclude self
+        #     target_label = all_labels[torch.argmax(cosine_scores).item()]
             
-            # Use examples from the target class to guide the rewrite
-            target_examples = "\n".join([f"- {s}" for s in random.sample(class_samples[target_label], k=min(2, len(class_samples[target_label])))])
-            prompt = (
-                f"Your task is to minimally rewrite the 'ORIGINAL BUG REPORT' so it becomes a valid report for the '{target_label}' team. "
-                f"To guide you, here are examples for the '{target_label}' team:\n"
-                f"EXAMPLES:\n{target_examples}\n\n"
-                f"Now, rewrite this report:\nORIGINAL BUG REPORT:\n---\n{original_text}"
-            )
-            counterfactual_prompts.append(prompt)
-            counterfactual_labels.append(target_label)
+        #     # Use examples from the target class to guide the rewrite
+        #     target_examples = "\n".join([f"- {s}" for s in random.sample(class_samples[target_label], k=min(2, len(class_samples[target_label])))])
+        #     prompt = (
+        #         f"Your task is to minimally rewrite the 'ORIGINAL BUG REPORT' so it becomes a valid report for the '{target_label}' team. "
+        #         f"To guide you, here are examples for the '{target_label}' team:\n"
+        #         f"EXAMPLES:\n{target_examples}\n\n"
+        #         f"Now, rewrite this report:\nORIGINAL BUG REPORT:\n---\n{original_text}"
+        #     )
+        #     counterfactual_prompts.append(prompt)
+        #     counterfactual_labels.append(target_label)
 
-        generated_counterfactuals = self._generate_text_with_llm(counterfactual_prompts)
-        negative_df = pd.DataFrame({'text_input': generated_counterfactuals, 'assignee_encoded': counterfactual_labels, 'source': 'salad_negative'})
+        # generated_counterfactuals = self._generate_text_with_llm(counterfactual_prompts)
+        # negative_df = pd.DataFrame({'text_input': generated_counterfactuals, 'assignee_encoded': counterfactual_labels, 'source': 'salad_negative'})
         
-        self.logger.info(f"Generated {len(positive_df)} positive and {len(negative_df)} negative samples.")
-        return pd.concat([positive_df, negative_df], ignore_index=True)
+        # self.logger.info(f"Generated {len(positive_df)} positive and {len(negative_df)} negative samples.")
+        # return pd.concat([positive_df, negative_df], ignore_index=True)
+        return positive_df
 
     def run(self, df: pd.DataFrame) -> pd.DataFrame:
         """Executes the full data augmentation pipeline."""
